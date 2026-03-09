@@ -2,9 +2,11 @@
 using LeaderboardApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LeaderboardApp.Controllers
 {
+    [Authorize]
     public class ScoringController : Controller
     {
         private readonly GhcacDbContext _context;

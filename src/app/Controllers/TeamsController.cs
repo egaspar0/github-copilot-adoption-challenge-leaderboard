@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using LeaderboardApp.Models;
 using LeaderboardApp.Services;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LeaderboardApp.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TeamsController : ControllerBase

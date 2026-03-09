@@ -1,8 +1,10 @@
 ﻿using LeaderboardApp.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LeaderboardApp.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class LeaderboardController : ControllerBase

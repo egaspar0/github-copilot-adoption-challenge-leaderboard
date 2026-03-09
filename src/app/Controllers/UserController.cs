@@ -237,9 +237,9 @@ namespace LeaderboardApp.Controllers
                 bool gitHubUpdateSuccess = true;
                 string gitHubMessage = "";
 
-                // Handle GitHub handle change
+                // Handle GitHub handle change (including first-time handle assignment while already on a team)
                 if (newTeamId.HasValue && !string.IsNullOrWhiteSpace(newGitHubHandle) &&
-                   (!string.IsNullOrWhiteSpace(oldGitHubHandle) && oldGitHubHandle != newGitHubHandle))
+                   (oldGitHubHandle != newGitHubHandle))
                 {
                     try
                     {

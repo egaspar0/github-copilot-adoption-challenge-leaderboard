@@ -5,9 +5,11 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Text.Json;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LeaderboardApp.Controllers
 {
+    [Authorize]
     public class LearnController : Controller
     {
         private readonly ChallengesService _challengesService;

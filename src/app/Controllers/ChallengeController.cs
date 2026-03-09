@@ -2,9 +2,11 @@
 using LeaderboardApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LeaderboardApp.Controllers
 {
+    [Authorize]
     public class ChallengeController : Controller
     {
         private readonly ChallengesService _challengesService;

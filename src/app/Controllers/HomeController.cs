@@ -20,6 +20,9 @@ namespace LeaderboardApp.Controllers
 
         public async Task<IActionResult> Index()
         {
+            if (User.Identity?.IsAuthenticated != true)
+                return View(new HomeViewModel());
+
             var leaderboard = await _leaderboardService.GetLeaderboardAsync();
             var challenges = await _challengesService.GetChallengesAsync();
 
@@ -44,6 +47,9 @@ namespace LeaderboardApp.Controllers
 
         public async Task<IActionResult> FullLeaderBoard()
         {
+            if (User.Identity?.IsAuthenticated != true)
+                return View(new List<LeaderboardApp.DTOs.LeaderboardEntryDto>());
+
             var leaderboard = await _leaderboardService.GetLeaderboardAsync();           
             return View(leaderboard);
         }

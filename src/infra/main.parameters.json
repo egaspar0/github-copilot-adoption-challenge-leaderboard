@@ -16,6 +16,9 @@
     },
     "sqlAdminClientIp": {
       "value": "${SQL_CLIENT_IP}"
+    },
+    "kvSecretsGroupObjectId": {
+      "value": "${KV_SECRETS_GROUP_OBJECT_ID}"
     }
   }
 }

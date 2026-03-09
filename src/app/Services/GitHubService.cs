@@ -109,14 +109,26 @@ namespace LeaderboardApp.Services
                 return string.Empty;
             }
 
-            var githubPayload = new
-            {
-                name = teamName,
-                description = "Auto-created from Copilot Challenge app",
-                permission = "push",
-                notification_setting = "notifications_enabled",
-                privacy = "closed"
-            };
+            int? parentTeamId = await GetOrCreateParentTeamIdAsync(org);
+
+            var githubPayload = parentTeamId.HasValue
+                ? (object)new
+                {
+                    name = teamName,
+                    description = "Auto-created from Copilot Challenge app",
+                    permission = "push",
+                    notification_setting = "notifications_enabled",
+                    privacy = "closed",
+                    parent_team_id = parentTeamId.Value
+                }
+                : new
+                {
+                    name = teamName,
+                    description = "Auto-created from Copilot Challenge app",
+                    permission = "push",
+                    notification_setting = "notifications_enabled",
+                    privacy = "closed"
+                };
 
             var response = await _httpClient.PostAsync(
                 $"{GHApiURLPrefix}/{org}/teams",
@@ -151,6 +163,123 @@ namespace LeaderboardApp.Services
             }
         }
 
+        private async Task<int?> GetOrCreateParentTeamIdAsync(string org)
+        {
+            var parentSlug = _configuration["GitHubSettings:ParentTeamSlug"];
+            if (string.IsNullOrWhiteSpace(parentSlug))
+            {
+                parentSlug = "copilot-challenge";
+            }
+
+            // Try to get the existing parent team
+            var getResponse = await _httpClient.GetAsync($"{GHApiURLPrefix}/{org}/teams/{parentSlug}");
+            if (getResponse.IsSuccessStatusCode)
+            {
+                try
+                {
+                    var json = await getResponse.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    var id = doc.RootElement.GetProperty("id").GetInt32();
+                    _logger.LogInformation("Found existing parent team '{Slug}' with id {Id}.", parentSlug, id);
+                    return id;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to parse parent team response for slug '{Slug}'.", parentSlug);
+                    return null;
+                }
+            }
+
+            if (getResponse.StatusCode != System.Net.HttpStatusCode.NotFound)
+            {
+                var errorBody = await getResponse.Content.ReadAsStringAsync();
+                _logger.LogError("Unexpected response when fetching parent team '{Slug}'. Status: {Status}, Body: {Body}",
+                    parentSlug, getResponse.StatusCode, errorBody);
+                return null;
+            }
+
+            // Parent team does not exist — create it
+            _logger.LogInformation("Parent team '{Slug}' not found. Creating it.", parentSlug);
+            var createPayload = new
+            {
+                name = "Copilot Challenge",
+                description = "Parent team for all Copilot Challenge teams",
+                privacy = "closed"
+            };
+
+            var createResponse = await _httpClient.PostAsync(
+                $"{GHApiURLPrefix}/{org}/teams",
+                new StringContent(JsonSerializer.Serialize(createPayload), Encoding.UTF8, "application/json")
+            );
+
+            var createJson = await createResponse.Content.ReadAsStringAsync();
+            if (!createResponse.IsSuccessStatusCode)
+            {
+                _logger.LogError("Failed to create parent team. Status: {Status}, Body: {Body}",
+                    createResponse.StatusCode, createJson);
+                return null;
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(createJson);
+                var id = doc.RootElement.GetProperty("id").GetInt32();
+                _logger.LogInformation("Created parent team 'Copilot Challenge' with id {Id}.", id);
+                return id;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to parse created parent team response.");
+                return null;
+            }
+        }
+
+
+        private string GetParentTeamSlug() =>
+            string.IsNullOrWhiteSpace(_configuration["GitHubSettings:ParentTeamSlug"])
+                ? "copilot-challenge"
+                : _configuration["GitHubSettings:ParentTeamSlug"]!;
+
+        private async Task<bool> IsTeamInScopeAsync(string org, string teamSlug)
+        {
+            var parentSlug = GetParentTeamSlug();
+
+            // The parent team itself is always in scope
+            if (teamSlug == parentSlug) return true;
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"{GHApiURLPrefix}/{org}/teams/{teamSlug}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("IsTeamInScopeAsync: could not retrieve team '{TeamSlug}'. Status: {Status}", teamSlug, response.StatusCode);
+                    return false;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+
+                if (doc.RootElement.TryGetProperty("parent", out var parentEl) &&
+                    parentEl.ValueKind != JsonValueKind.Null &&
+                    parentEl.TryGetProperty("slug", out var slugEl))
+                {
+                    var actualParent = slugEl.GetString();
+                    if (actualParent == parentSlug) return true;
+
+                    _logger.LogWarning("Team '{TeamSlug}' has parent '{ActualParent}', not the configured parent '{ExpectedParent}'. Operation blocked.",
+                        teamSlug, actualParent, parentSlug);
+                    return false;
+                }
+
+                _logger.LogWarning("Team '{TeamSlug}' has no parent team. Operation blocked to prevent acting outside Copilot Challenge scope.", teamSlug);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to verify team scope for slug '{TeamSlug}'. Operation blocked.", teamSlug);
+                return false;
+            }
+        }
 
         public async Task<string?> GetLastUserActivity(string? githubHandle)
         {
@@ -207,6 +336,19 @@ namespace LeaderboardApp.Services
 
             var org = _configuration["GitHubSettings:Org"];
             if (string.IsNullOrWhiteSpace(org)) { _logger.LogWarning("GitHub organization is not configured."); return false; }
+
+            if (!await IsTeamInScopeAsync(org, newTeamSlug))
+            {
+                _logger.LogError("MoveUserToTeamAsync blocked: target team '{TeamSlug}' is not within Copilot Challenge scope.", newTeamSlug);
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(oldTeamSlug) && !await IsTeamInScopeAsync(org, oldTeamSlug))
+            {
+                _logger.LogError("MoveUserToTeamAsync blocked: source team '{TeamSlug}' is not within Copilot Challenge scope.", oldTeamSlug);
+                return false;
+            }
+
             try
             {
                 if (!string.IsNullOrWhiteSpace(oldTeamSlug))
@@ -245,6 +387,24 @@ namespace LeaderboardApp.Services
                 }
 
                 _logger.LogInformation("Successfully moved user {GitHubUsername} to team {NewTeamSlug}.", githubUsername, newTeamSlug);
+
+                // Remove direct parent team membership if configured — child team membership implies parent via inheritance
+                var parentSlug = GetParentTeamSlug();
+                if (!string.IsNullOrWhiteSpace(parentSlug) && newTeamSlug != parentSlug)
+                {
+                    var removeParentUrl = $"{GHApiURLPrefix}/{org}/teams/{parentSlug}/memberships/{githubUsername}";
+                    var removeParentResponse = await _httpClient.DeleteAsync(removeParentUrl);
+                    if (removeParentResponse.IsSuccessStatusCode || removeParentResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        _logger.LogInformation("Removed direct parent team membership for {GitHubUsername} from '{ParentSlug}'.", githubUsername, parentSlug);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Could not remove direct parent membership for {GitHubUsername} from '{ParentSlug}'. Status: {Status}",
+                            githubUsername, parentSlug, removeParentResponse.StatusCode);
+                    }
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -261,6 +421,13 @@ namespace LeaderboardApp.Services
 
             var org = _configuration["GitHubSettings:Org"];
             if (string.IsNullOrWhiteSpace(org)) { _logger.LogWarning("GitHub organization is not configured."); return false; }
+
+            if (!await IsTeamInScopeAsync(org, teamSlug))
+            {
+                _logger.LogError("RemoveAllUsersFromTeamAsync blocked: team '{TeamSlug}' is not within Copilot Challenge scope.", teamSlug);
+                return false;
+            }
+
             try
             {
                 var membersUrl = $"{GHApiURLPrefix}/{org}/teams/{teamSlug}/members";
@@ -310,6 +477,13 @@ namespace LeaderboardApp.Services
 
             var org = _configuration["GitHubSettings:Org"];
             if (string.IsNullOrWhiteSpace(org)) { _logger.LogWarning("GitHub organization is not configured."); return false; }
+
+            if (!await IsTeamInScopeAsync(org, teamSlug))
+            {
+                _logger.LogError("RemoveUserFromTeamAsync blocked: team '{TeamSlug}' is not within Copilot Challenge scope.", teamSlug);
+                return false;
+            }
+
             try
             {
                 var removeUrl = $"{GHApiURLPrefix}/{org}/teams/{teamSlug}/memberships/{githubUsername}";

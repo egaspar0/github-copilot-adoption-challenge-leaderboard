@@ -5,6 +5,9 @@ param sqlAdminObjectId string
 param sqlAdminLogin string
 param sqlAdminClientIp string
 
+@description('Object ID of the AAD group granted Key Vault Secrets Officer during deployment.')
+param kvSecretsGroupObjectId string
+
 var uniqueSuffix = toLower(substring(uniqueString(resourceGroup().id), 0, 5))
 
 
@@ -30,6 +33,7 @@ module utils 'utils.bicep' = {
     location: location
     vnetId: network.outputs.vnetId
     subnets: network.outputs.subnets
+    kvSecretsGroupObjectId: kvSecretsGroupObjectId
   }
 }
 

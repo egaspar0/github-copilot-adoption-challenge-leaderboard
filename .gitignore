@@ -409,3 +409,6 @@ FodyWeavers.xsd
 # Azure Developer CLI
 .azure/*/
 !.azure/dev/.env.json
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
