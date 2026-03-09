@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject LeaderboardApp.Services.IAdminService AdminService
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -27,8 +28,12 @@
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav navbar-right">
-                    @if (User.Identity.IsAuthenticated)
+                    @if (User.Identity!.IsAuthenticated)
                     {
+                        @if (AdminService.IsAdminUser())
+                        {
+                            <li><a href="/Admin/Index"><span class="glyphicon glyphicon-cog"></span> Admin</a></li>
+                        }
                         <li><a href="/User/Profile"><span class="glyphicon glyphicon-user"></span> Welcome, @User.Identity.Name</a></li>
                         <li><a href="/AADAuth/Logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
                     }

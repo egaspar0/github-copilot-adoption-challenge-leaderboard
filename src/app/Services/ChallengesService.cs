@@ -14,6 +14,7 @@ namespace LeaderboardApp.Services
         private readonly ILogger<ChallengesService> _logger;
         private readonly IOptionsSnapshot<ChallengeScheduleConfig> _scheduleConfig;
         private readonly IConfiguration _configuration;
+        private readonly IAdminService _adminService;
 
         private Guid? _cachedUserId; 
 
@@ -22,13 +23,15 @@ namespace LeaderboardApp.Services
             IHttpContextAccessor httpContextAccessor,
             ILogger<ChallengesService> logger,
             IOptionsSnapshot<ChallengeScheduleConfig> scheduleConfig,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IAdminService adminService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _scheduleConfig = scheduleConfig ?? throw new ArgumentNullException(nameof(scheduleConfig));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _adminService = adminService ?? throw new ArgumentNullException(nameof(adminService));
         }
 
         public async Task<List<ChallengeDto>?> GetChallengesAsync()
@@ -72,7 +75,7 @@ namespace LeaderboardApp.Services
             var newBadgeCutoff = now.AddHours(-schedule.NewBadgeDurationHours);
 
             // Admins bypass the release-date filter and see all challenges immediately.
-            var isAdmin = IsAdminUser(schedule);
+            var isAdmin = _adminService.IsAdminUser();
 
             // Filter, annotate, and sort challenges according to the schedule.
             var result = allChallenges
@@ -104,7 +107,7 @@ namespace LeaderboardApp.Services
                     }
                     else
                     {
-                        // No schedule entry — DB PostedDate is already set; keep it.
+                        // No schedule entry - DB PostedDate is already set; keep it.
                         c.IsNew = false;
                         c.DisplayOrder = int.MaxValue;
                     }
@@ -282,25 +285,6 @@ namespace LeaderboardApp.Services
             return _cachedUserId;
         }
 
-        /// <summary>
-        /// Returns true if the currently authenticated user's email is in the Admin
-        /// list in ChallengeSettings (appsettings.json). Comparison is case-insensitive.
-        /// </summary>
-        private bool IsAdminUser(ChallengeScheduleConfig _)
-        {
-            var adminEmails = _configuration.GetSection("ChallengeSettings:Admin").Get<List<string>>();
-            if (adminEmails == null || adminEmails.Count == 0)
-                return false;
-
-            var email = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email)
-                        ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("preferred_username")
-                        ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("emails");
-
-            if (string.IsNullOrEmpty(email))
-                return false;
-
-            return adminEmails.Any(a => a.Equals(email, StringComparison.OrdinalIgnoreCase));
-        }
 
 
         // To check if all team members have completed a challenge

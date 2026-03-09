@@ -12,9 +12,8 @@ public partial class Team
     [StringLength(100)]
     public string Name { get; set; }
 
-    [Required(ErrorMessage = "Icon URL is required.")]
     [Url(ErrorMessage = "Please enter a valid URL.")]
-    public string Icon { get; set; }
+    public string? Icon { get; set; }
 
     [Required(ErrorMessage = "Tagline is required.")]
     [StringLength(250)]

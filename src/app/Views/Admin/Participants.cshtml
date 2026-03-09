@@ -1,0 +1,141 @@
+@model LeaderboardApp.ViewModels.AdminParticipantsViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Admin – Participants";
+}
+
+<div class="container mt-4">
+    <h2><span class="glyphicon glyphicon-user"></span> Manage Participants</h2>
+    <p class="text-muted">
+        <a href="@Url.Action("Index", "Admin")"><span class="glyphicon glyphicon-arrow-left"></span> Back to Admin Dashboard</a>
+    </p>
+    <hr />
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (Model.IsLocked)
+    {
+        <div class="alert alert-warning">
+            <span class="glyphicon glyphicon-lock"></span>
+            <strong>Locked.</strong> The challenge has started - participant reorganization is disabled.
+        </div>
+    }
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>@Model.Participants.Count participants</strong>
+        </div>
+        <div class="panel-body" style="overflow-x:auto;">
+            <table class="table table-bordered table-striped table-hover" style="min-width:900px;">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Nickname</th>
+                        <th>Email</th>
+                        <th>GitHub Handle</th>
+                        <th>Current Team</th>
+                        <th style="min-width:260px;">Move to Team</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Participants)
+                    {
+                        <tr>
+                            <td>@p.FullName</td>
+                            <td>@p.Nickname</td>
+                            <td>@p.Email</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(p.GitHubHandle))
+                                {
+                                    <a href="https://github.com/@p.GitHubHandle" target="_blank">@p.GitHubHandle</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(p.TeamName))
+                                {
+                                    <span class="label label-primary">@p.TeamName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted"><em>Unassigned</em></span>
+                                }
+                            </td>
+                            <td>
+                                <form method="post" action="@Url.Action("MoveParticipant", "Admin")" style="display:flex; gap:4px; align-items:center;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="participantId" value="@p.ParticipantId" />
+                                    <select name="newTeamId" class="form-control input-sm" @(Model.IsLocked ? "disabled" : "") style="flex:1; min-width:140px;">
+                                        @foreach (var t in Model.AllTeams)
+                                        {
+                                            if (t.Teamid == p.TeamId)
+                                            {
+                                                <option value="@t.Teamid" selected>@t.Name</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@t.Teamid">@t.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm" @(Model.IsLocked ? "disabled" : "") title="Move participant to selected team">
+                                        <span class="glyphicon glyphicon-share-alt"></span>
+                                    </button>
+                                </form>
+                            </td>
+                            <td style="white-space:nowrap;">
+                                <!-- Unassign -->
+                                <form method="post" action="@Url.Action("UnassignParticipant", "Admin")" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="participantId" value="@p.ParticipantId" />
+                                    <button type="submit"
+                                            class="btn btn-warning btn-xs"
+                                            @(Model.IsLocked ? "disabled" : "")
+                                            title="Remove from team (keep participant)"
+                                            onclick="return confirm('Unassign @Html.Raw(p.FullName.Replace("'", "\\'")) from their team?');">
+                                        <span class="glyphicon glyphicon-remove-circle"></span> Unassign
+                                    </button>
+                                </form>
+                                &nbsp;
+                                <!-- Delete -->
+                                <form method="post" action="@Url.Action("DeleteParticipant", "Admin")" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="participantId" value="@p.ParticipantId" />
+                                    <button type="submit"
+                                            class="btn btn-danger btn-xs"
+                                            @(Model.IsLocked ? "disabled" : "")
+                                            title="Permanently delete this participant"
+                                            onclick="return confirm('PERMANENTLY delete @Html.Raw(p.FullName.Replace("'", "\\'"))? This cannot be undone.');">
+                                        <span class="glyphicon glyphicon-trash"></span> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Participants.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted">No participants found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

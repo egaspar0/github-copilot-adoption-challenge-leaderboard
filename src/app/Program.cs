@@ -119,6 +119,7 @@ namespace LeaderboardApp
             builder.Services.AddHttpClient<GitHubService>();
             builder.Services.AddScoped<LearnService>();
             builder.Services.AddScoped<ScoringService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
 
             // Add services to the container, including support for MVC and Web API
             builder.Services.AddControllersWithViews()  // Support for MVC

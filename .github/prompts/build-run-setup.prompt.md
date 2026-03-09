@@ -22,7 +22,7 @@ dotnet run
 ```
 
 The app starts on `http://localhost:5257`.  
-If you see `DB Init failed: A task was canceled.` on startup, the Azure SQL firewall is blocking your IP — follow the steps below.
+If you see `DB Init failed: A task was canceled.` on startup, the Azure SQL firewall is blocking your IP - follow the steps below.
 
 ---
 
@@ -89,6 +89,6 @@ info: Microsoft.Hosting.Lifetime[14]
 | File | Purpose |
 |------|---------|
 | `src/app/appsettings.json` | Base configuration (empty connection strings, feature flags) |
-| `src/app/appsettings.Development.json` | Local dev overrides — Azure AD, SQL connection string |
+| `src/app/appsettings.Development.json` | Local dev overrides - Azure AD, SQL connection string |
 
-The `ConnectionStrings.SqlServer` value in `appsettings.Development.json` uses `Authentication=Active Directory Default`, so the Azure CLI logged-in identity (or `DefaultAzureCredential`) is used — no password needed.
+The `ConnectionStrings.SqlServer` value in `appsettings.Development.json` uses `Authentication=Active Directory Default`, so the Azure CLI logged-in identity (or `DefaultAzureCredential`) is used - no password needed.
