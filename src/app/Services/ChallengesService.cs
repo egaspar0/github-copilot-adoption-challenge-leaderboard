@@ -52,20 +52,22 @@ namespace LeaderboardApp.Services
             }
             else
             {
-                //// Not logged in
-                //return await _context.Challenges
-                //    .Select(c => new ChallengeDto
-                //    {
-                //        Title = c.Title,
-                //        Content = c.Content,
-                //        PostedDate = c.PostedDate ?? DateTime.MinValue,
-                //        ActivityId = c.ActivityId ?? 0,
-                //        ChallengeId = c.ChallengeId,
-                //        IsCompleted = false
-                //    })
-                //    .OrderByDescending(c => c.PostedDate)
-                //    .ToListAsync();
-                return null;
+                // Not a participant yet (unauthenticated or no profile created) — show challenges without completion state
+                return await _context.Challenges
+                    .Where(c => c.ActivityId != null &&
+                                (c.ActivityId == 10 || c.ActivityId == 11 || c.ActivityId == 12 || c.ActivityId == 13) &&
+                                (c.PostedDate == null || c.PostedDate <= DateTime.UtcNow))
+                    .Select(c => new ChallengeDto
+                    {
+                        Title = c.Title,
+                        Content = c.Content,
+                        PostedDate = c.PostedDate ?? DateTime.MinValue,
+                        ActivityId = c.ActivityId ?? 0,
+                        ChallengeId = c.ChallengeId,
+                        IsCompleted = false
+                    })
+                    .OrderByDescending(c => c.PostedDate)
+                    .ToListAsync();
             }
         }
 
