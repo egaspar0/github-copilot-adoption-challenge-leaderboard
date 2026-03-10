@@ -119,20 +119,26 @@ class ChallengeProcessor:
         # For now, we'll handle this after HTML conversion by looking for list patterns
         # Pattern: <ul><li>[ ] Yes</li><li>[ ] No</li></ul> or similar
         
+        # Pattern 1: Handle checkbox-style radio button pairs
+        # Each Yes/No pair gets its own incrementing question number.
         checkbox_patterns = [
-            (r'<li>\[\s*\]\s*Yes\s*</li>\s*<li>\[\s*\]\s*No\s*</li>', 
-             f'<label><input type="radio" name="{slug}-q{question_counter}" value="yes"> Yes</label><label><input type="radio" name="{slug}-q{question_counter}" value="no"> No</label>'),
-            (r'<li>\[\s*\]\s*No\s*</li>\s*<li>\[\s*\]\s*Yes\s*</li>', 
-             f'<label><input type="radio" name="{slug}-q{question_counter}" value="no"> No</label><label><input type="radio" name="{slug}-q{question_counter}" value="yes"> Yes</label>'),
-            (r'<li>\[\s*\]\s*True\s*</li>\s*<li>\[\s*\]\s*False\s*</li>', 
-             f'<label><input type="radio" name="{slug}-q{question_counter}" value="true"> True</label><label><input type="radio" name="{slug}-q{question_counter}" value="false"> False</label>'),
-            (r'<li>\[\s*\]\s*False\s*</li>\s*<li>\[\s*\]\s*True\s*</li>', 
-             f'<label><input type="radio" name="{slug}-q{question_counter}" value="false"> False</label><label><input type="radio" name="{slug}-q{question_counter}" value="true"> True</label>'),
+            (r'<li>\[\s*\]\s*Yes\s*</li>\s*<li>\[\s*\]\s*No\s*</li>',  'yes', 'no'),
+            (r'<li>\[\s*\]\s*No\s*</li>\s*<li>\[\s*\]\s*Yes\s*</li>',  'no',  'yes'),
+            (r'<li>\[\s*\]\s*True\s*</li>\s*<li>\[\s*\]\s*False\s*</li>', 'true',  'false'),
+            (r'<li>\[\s*\]\s*False\s*</li>\s*<li>\[\s*\]\s*True\s*</li>', 'false', 'true'),
         ]
-        
-        for pattern, replacement in checkbox_patterns:
-            html_content = re.sub(pattern, replacement, html_content)
-            question_counter += 1
+
+        for pattern, first_val, second_val in checkbox_patterns:
+            first_label  = first_val.capitalize()
+            second_label = second_val.capitalize()
+            # Each match in the document is a separate question — increment per match.
+            def make_replacement(m, _slug=slug, _fv=first_val, _fl=first_label, _sv=second_val, _sl=second_label):
+                nonlocal question_counter
+                q = f"{_slug}-q{question_counter}"
+                question_counter += 1
+                return (f'<label><input type="radio" name="{q}" value="{_fv}"> {_fl}</label>'
+                        f'<label><input type="radio" name="{q}" value="{_sv}"> {_sl}</label>')
+            html_content = re.sub(pattern, make_replacement, html_content)
         
         # Pattern 2: Handle text patterns like "Yes / No", "True/False" after paragraphs
         # Look for patterns like "Yes / No", "Yes/No", "No / Yes", "True / False", "True/False"
