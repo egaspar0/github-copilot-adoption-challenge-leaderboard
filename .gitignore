@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Local-only operational docs
+GO-LIVE.md
+GOTCHAS.md
+SECURITY-ASSURANCE-REVIEW-PREP.md
+.codacy/
+.github/instructions/
+
 # User-specific files
 *.rsuser
 *.suo

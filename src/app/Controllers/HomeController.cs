@@ -20,6 +20,7 @@ namespace LeaderboardApp.Controllers
 
         public async Task<IActionResult> Index()
         {
+            ViewBag.ChallengeStarted = _configuration.GetValue<bool>("ChallengeSettings:ChallengeStarted");
             var leaderboard = await _leaderboardService.GetLeaderboardAsync();
             var challenges = await _challengesService.GetChallengesAsync();
 
