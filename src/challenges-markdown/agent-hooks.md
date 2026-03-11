@@ -39,9 +39,14 @@ In this exercise you will create **agent hooks** — small shell scripts that ru
   ```bash
   cat > .github/hooks/secret-scanner.json << 'EOF'
   {
-    "event": "PreToolUse",
-    "command": "bash .github/hooks/secret-scanner.sh",
-    "description": "Blocks any file write that contains a hardcoded secret pattern such as GitHub tokens, AWS keys, or passwords."
+    "hooks": {
+      "PreToolUse": [
+        {
+          "type": "command",
+          "command": "bash .github/hooks/secret-scanner.sh"
+        }
+      ]
+    }
   }
   EOF
   ```
@@ -51,19 +56,23 @@ In this exercise you will create **agent hooks** — small shell scripts that ru
   ```bash
   cat > .github/hooks/secret-scanner.sh << 'EOF'
   #!/bin/bash
-  # Read the file content being written from stdin
+  # Read the hook input from stdin (VS Code sends JSON containing tool_input)
   content=$(cat)
 
-  # Check for common secret patterns
+  # Check for common secret patterns in the tool input
   if echo "$content" | grep -qE 'ghp_[A-Za-z0-9]+|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]+|password\s*=\s*\S+'; then
-    echo "❌ SECRET DETECTED: This file contains a hardcoded secret and cannot be written."
-    exit 1
+    echo "❌ SECRET DETECTED: Hardcoded secret pattern found. Blocking write." >&2
+    # Output deny decision as JSON — VS Code reads this on exit 0
+    echo '{"hookSpecificOutput":{"permissionDecision":"deny","permissionDecisionReason":"Blocked: hardcoded secret pattern detected (e.g. GitHub token, AWS key, or password)."}}'
+    exit 0
   fi
 
   exit 0
   EOF
   chmod +x .github/hooks/secret-scanner.sh
   ```
+
+  > **How it works:** When a `PreToolUse` hook outputs JSON with `"permissionDecision": "deny"` to **stdout** and exits with code `0`, VS Code prevents the agent from executing that tool call. The human-readable message is sent to **stderr** (using `>&2`) so it appears in the Hooks output channel without interfering with the JSON protocol. Exit code `1` only shows a non-blocking warning and does **not** block the action.
 
 - **Step 4.** Open VS Code, switch to **Agent mode** in the Copilot Chat panel, and send this exact prompt:
 
@@ -80,9 +89,14 @@ In this exercise you will create **agent hooks** — small shell scripts that ru
   ```bash
   cat > .github/hooks/test-runner.json << 'EOF'
   {
-    "event": "PostToolUse",
-    "command": "bash .github/hooks/test-runner.sh",
-    "description": "Automatically runs the relevant test suite whenever the agent modifies a .js, .ts, or .py source file."
+    "hooks": {
+      "PostToolUse": [
+        {
+          "type": "command",
+          "command": "bash .github/hooks/test-runner.sh"
+        }
+      ]
+    }
   }
   EOF
   ```
@@ -92,22 +106,29 @@ In this exercise you will create **agent hooks** — small shell scripts that ru
   ```bash
   cat > .github/hooks/test-runner.sh << 'EOF'
   #!/bin/bash
-  # The modified file path is passed as the first argument
-  MODIFIED_FILE="$1"
+  # VS Code sets TOOL_INPUT_FILE_PATH to the path of the modified file
+  MODIFIED_FILE="${TOOL_INPUT_FILE_PATH:-}"
+
+  if [[ -z "$MODIFIED_FILE" ]]; then
+    echo "ℹ️ No file path provided. Skipping." >&2
+    exit 0
+  fi
 
   if [[ "$MODIFIED_FILE" == *.js || "$MODIFIED_FILE" == *.ts ]]; then
-    echo "🧪 Running JavaScript/TypeScript tests..."
-    npm test
+    echo "🧪 Running JavaScript/TypeScript tests..." >&2
+    npm test >&2
   elif [[ "$MODIFIED_FILE" == *.py ]]; then
-    echo "🧪 Running Python tests..."
-    pytest
+    echo "🧪 Running Python tests..." >&2
+    pytest >&2
   else
-    echo "ℹ️ No test runner configured for this file type. Skipping."
+    echo "ℹ️ No test runner configured for this file type. Skipping." >&2
     exit 0
   fi
   EOF
   chmod +x .github/hooks/test-runner.sh
   ```
+
+  > **How it works:** VS Code sets the `TOOL_INPUT_FILE_PATH` environment variable to the path of the file being modified. Hook scripts read this variable — command-line arguments are **not** passed to hooks. All diagnostic output uses `>&2` (stderr) so it appears in the Hooks output channel without interfering with VS Code's JSON protocol on stdout.
 
 - **Step 7.** In Agent mode, send this exact prompt:
 
@@ -143,9 +164,14 @@ In this exercise you will create **agent hooks** — small shell scripts that ru
   ```bash
   cat > .github/hooks/context-injector.json << 'EOF'
   {
-    "event": "SessionStart",
-    "command": "bash .github/hooks/context-injector.sh",
-    "description": "Injects the contents of CONTEXT.md as project context at the start of every agent session."
+    "hooks": {
+      "SessionStart": [
+        {
+          "type": "command",
+          "command": "bash .github/hooks/context-injector.sh"
+        }
+      ]
+    }
   }
   EOF
   ```
@@ -158,16 +184,16 @@ In this exercise you will create **agent hooks** — small shell scripts that ru
   CONTEXT_FILE="CONTEXT.md"
 
   if [ -f "$CONTEXT_FILE" ]; then
-    echo "📋 Injecting project context from $CONTEXT_FILE..."
-    cat "$CONTEXT_FILE"
+    echo "📋 Injecting project context from $CONTEXT_FILE..." >&2
+    cat "$CONTEXT_FILE" >&2
   else
-    echo "⚠️ No CONTEXT.md found. Skipping context injection."
+    echo "⚠️ No CONTEXT.md found. Skipping context injection." >&2
   fi
   EOF
   chmod +x .github/hooks/context-injector.sh
   ```
 
-- **Step 11.** Close and reopen the Copilot Chat panel to start a **new agent session**. Then send this exact prompt:
+- **Step 11.** Start a **new agent session** in the Copilot Chat panel. Then send this exact prompt:
 
   > What are the coding standards for this project?
 

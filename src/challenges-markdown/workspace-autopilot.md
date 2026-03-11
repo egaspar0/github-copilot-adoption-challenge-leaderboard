@@ -5,41 +5,41 @@ ActivityId: 12
 
 ### Summary
 
-In this activity you will use **GitHub Copilot Workspace in GitHub Enterprise** to fix a real issue in your repository. Copilot Workspace will create a plan generate a new branch apply the changes and open a pull request for review. Expect to spend twenty to twenty five minutes.
+In this activity you will use **GitHub Copilot coding agent** to fix a real issue in your repository. You will assign Copilot to a GitHub Issue, and it will autonomously create a branch, implement the fix, and open a pull request for your review. Expect to spend twenty to twenty-five minutes.
 
 ### What you will learn
 
-- Enabling Copilot Workspace on a GitHub Issue.
+- Assigning Copilot coding agent to a GitHub Issue.
 
-- Reviewing an AI generated implementation plan.
+- Reviewing the pull request that Copilot creates autonomously.
 
-- Letting Copilot create code commits and a pull request automatically.
+- Providing feedback via pull request comments to iterate on the solution.
 
-- Verifying the pull request fixes the bug before merging.
+- Merging the pull request after verifying the fix.
 
 ### Before you start
 
-Copilot Workspace is currently available in **VS Code** with the Copilot Nightly extension. Confirm you have the Nightly build installed and signed in to GitHub. Ensure there is a GitHub Issue in your repository that describes a reproducible bug.
+Copilot coding agent is available with **GitHub Copilot Pro, Pro+, Business, and Enterprise** plans. Confirm that Copilot coding agent is enabled for your repository (an organization admin may need to enable the policy). Ensure there is a GitHub Issue in your repository that describes a reproducible bug.
 
 ### Steps
 
-- **Step 1.** Open the Issue you want to fix in your browser and click **Open in Copilot Workspace**.
+- **Step 1.** Open the Issue you want to fix on GitHub.com and click **Assignees** in the right sidebar.
 
-- **Step 2.** VS Code launches a workspace panel showing the Issue description. Click **Generate plan** and wait for Copilot to list tasks.
+- **Step 2.** Select **Copilot** from the assignees list. In the dialog that appears, optionally add specific guidance in the **Optional prompt** field (for example, coding patterns to follow or files to modify).
 
-- **Step 3.** Review the task list. If it looks correct click **Run** to let Copilot apply the changes on a new branch named `workspace_fix`.
+- **Step 3.** Confirm the target repository and base branch, then click to assign. Copilot coding agent begins working in the background using a GitHub Actions-powered environment.
 
-- **Step 4.** Watch Copilot create commits. When finished it opens a pull request in the repository.
+- **Step 4.** Monitor progress from the **Agents** tab in your repository or from the [agents page](https://github.com/copilot/agents). Copilot will create a `copilot/` branch, commit changes, and open a draft pull request.
 
-- **Step 5.** Open the pull request in your browser. Review the diff run tests locally or via continuous integration and confirm the bug is resolved.
+- **Step 5.** When Copilot finishes, it requests a review from you. Open the pull request, review the diff, and run tests locally or via CI to confirm the bug is resolved.
 
-- **Step 6.** Merge the pull request using the standard Merge button.
+- **Step 6.** If changes are needed, leave pull request comments — Copilot will read them and push follow-up commits. Iterate until you are satisfied.
 
-- **Step 7.** Close the original Issue if it did not close automatically.
+- **Step 7.** Approve and merge the pull request. Close the original Issue if it did not close automatically.
 
 ### Checkpoint
 
-1. Did Copilot Workspace generate a clear task plan for the Issue
+1. Did Copilot coding agent create a pull request from the assigned Issue
 
 - [ ] Yes
 - [ ] No
@@ -56,6 +56,6 @@ Copilot Workspace is currently available in **VS Code** with the Copilot Nightly
 
 ### Explore more
 
-- [Copilot Workspace project overview](https://githubnext.com/projects/copilot-workspace)
+- [About GitHub Copilot coding agent](https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-coding-agent)
 
-- [Working with GitHub Issues](https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues)
+- [Asking GitHub Copilot to create a pull request](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-a-pr)

@@ -56,6 +56,6 @@ In this rapid prototyping exercise, you will upload a photo of a hand-drawn or e
 
 ### Explore more
 
-- [Vscode copilot vision](https://github.com/microsoft/vscode-copilot-vision)
-
 - [Using images in Copilot Chat](https://docs.github.com/en/copilot/how-tos/chat-with-copilot/chat-in-ide#using-images-in-copilot-chat)
+
+- [Copilot Chat agent mode](https://code.visualstudio.com/docs/copilot/chat/chat-agent-mode)

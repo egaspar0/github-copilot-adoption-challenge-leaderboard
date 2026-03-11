@@ -20,7 +20,7 @@ Ensure you are running VS Code with the latest GitHub Copilot Chat extension. Ag
 
 ### Steps
 
-- **Step 1.** Open a Local Copilot Chat session and switch to **Agent** mode using the mode picker at the bottom of the panel.
+- **Step 1.** Open a Local Copilot Chat session and switch to **Agent** mode using the agents dropdown at the bottom of the panel.
 
 - **Step 2.** Enter a prompt that naturally requires delegation, for example: `Review the entire codebase and perform an extensive research across all the public API endpoints in this project in parallel and then create a Markdown summary for each API endpoint that provides the following details - HTTP method, route, purpose, and enhancements.`
 

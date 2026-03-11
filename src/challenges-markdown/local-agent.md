@@ -21,7 +21,7 @@ Ensure VS Code has the latest GitHub Copilot Chat extension. Enable agent mode i
 
 ### Steps
 
-- **Step 1.** Open Copilot Chat and use the mode picker to switch to **Ask** mode. Enter: `Explain how authentication is handled in this project.` Review the response, which references specific files without making edits.
+- **Step 1.** Open Copilot Chat and use the agents dropdown to switch to **Ask** mode. Enter: `Explain how authentication is handled in this project.` Review the response, which references specific files without making edits.
 
 - **Step 2.** Switch to **Plan** mode. Enter: `Add input validation to all API controller methods.` Copilot generates a step-by-step plan listing files to change and what to modify.
 

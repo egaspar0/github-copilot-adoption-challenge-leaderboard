@@ -27,7 +27,7 @@ In this quick win you will use **GitHub Copilot Chat Vision (Preview feature) **
 
 - **Step 2.** Create and check out a new branch named `vision-stubs` by using `git checkout -b vision-stubs` or the source control view.
 
-- **Step 3.** Open a new Local Copilot Chat session and select the agent mode.
+- **Step 3.** Open a new Local Copilot Chat session and select **Agent** mode.
 
 - **Step 4.** Drag the PNG or SVG diagram from the Explorer into the chat input box. Wait until the thumbnail appears confirming the image is attached.
 

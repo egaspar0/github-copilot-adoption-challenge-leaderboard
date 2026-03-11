@@ -19,7 +19,7 @@ In this advanced workflow, you'll configure a **GitHub Copilot Space** to centra
 
 ### Before you start
 
-Copilot Spaces are available to all GitHub Copilot users at [github.com/copilot/spaces](https://github.com/copilot/spaces). If you are on a **Copilot Business** or **Copilot Enterprise** plan, your organization admin must opt in to Copilot preview features. Prepare your documentation (Markdown, text, or supported formats) and ensure it is stored in a GitHub repository so it can be attached directly to the Space.
+Copilot Spaces are available to all GitHub Copilot users, including Copilot Free, at [github.com/copilot/spaces](https://github.com/copilot/spaces). Prepare your documentation (Markdown, text, or supported formats) and ensure it is stored in a GitHub repository so it can be attached directly to the Space.
 
 ### Steps
 
@@ -57,6 +57,6 @@ Copilot Spaces are available to all GitHub Copilot users at [github.com/copilot/
 
 ### Explore more
 
-- [Copilot Spaces](https://docs.github.com/copilot/using-github-copilot/copilot-spaces/about-organizing-and-sharing-context-with-copilot-spaces)
+- [Copilot Spaces](https://docs.github.com/en/copilot/concepts/context/spaces)
 
 - [Markdown ADR template](https://adr.github.io/madr/)
