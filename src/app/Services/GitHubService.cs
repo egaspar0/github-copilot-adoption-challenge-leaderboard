@@ -575,6 +575,73 @@ namespace LeaderboardApp.Services
             }
         }
 
+        public async Task<bool> DeleteTeamAsync(string teamSlug)
+        {
+            if (IsDisabled()) return true;
+
+            var org = _configuration["GitHubSettings:Org"];
+            if (string.IsNullOrWhiteSpace(org)) { _logger.LogWarning("GitHub organization is not configured."); return false; }
+
+            try
+            {
+                var url = $"{GHApiURLPrefix}/{org}/teams/{teamSlug}";
+                var response = await _httpClient.DeleteAsync(url);
+
+                // 204 = deleted, 404 = already gone - both are fine
+                if (!response.IsSuccessStatusCode &&
+                    response.StatusCode != System.Net.HttpStatusCode.NotFound)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError(
+                        "Failed to delete GitHub team '{TeamSlug}'. Status: {StatusCode}, Response: {Response}",
+                        teamSlug, response.StatusCode, errorContent);
+                    return false;
+                }
+
+                _logger.LogInformation("Successfully deleted GitHub team '{TeamSlug}'", teamSlug);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception deleting GitHub team '{TeamSlug}'", teamSlug);
+                return false;
+            }
+        }
+
+        public async Task<List<GitHubTeam>?> GetAllTeamsAsync()
+        {
+            if (IsDisabled()) return new List<GitHubTeam>();
+
+            var org = _configuration["GitHubSettings:Org"];
+            if (string.IsNullOrWhiteSpace(org)) { _logger.LogWarning("GitHub organization is not configured."); return null; }
+
+            try
+            {
+                var url = $"{GHApiURLPrefix}/{org}/teams?per_page=100";
+                var response = await _httpClient.GetAsync(url);
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError(
+                        "Failed to list GitHub teams. Status: {StatusCode}, Response: {Response}",
+                        response.StatusCode, jsonResponse);
+                    return null;
+                }
+
+                var teams = JsonSerializer.Deserialize<List<GitHubTeam>>(jsonResponse,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                _logger.LogInformation("Retrieved {Count} GitHub teams for org '{Org}'", teams?.Count ?? 0, org);
+                return teams;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching GitHub teams for org '{Org}'", org);
+                return null;
+            }
+        }
+
         // Placeholder for GitHubActivityResponse used above (if not already defined elsewhere)
         private class GitHubActivityResponse
         {
@@ -582,5 +649,12 @@ namespace LeaderboardApp.Services
         }
 
         public class GitHubMember { [JsonPropertyName("login")] public string Login { get; set; } = string.Empty; }
+
+        public class GitHubTeam
+        {
+            [JsonPropertyName("id")] public int Id { get; set; }
+            [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
+            [JsonPropertyName("slug")] public string Slug { get; set; } = string.Empty;
+        }
     }
 }

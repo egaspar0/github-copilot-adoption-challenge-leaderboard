@@ -417,5 +417,6 @@ FodyWeavers.xsd
 .azure/*/
 !.azure/dev/.env.json
 
-#Ignore vscode AI rules
-.github\instructions\codacy.instructions.md
+# Local development settings with sensitive values (TenantId, ClientId, connection strings)
+**/appsettings.Development.json
+**/appsettings.Local.json

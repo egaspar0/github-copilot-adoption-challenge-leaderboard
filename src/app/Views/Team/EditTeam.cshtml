@@ -6,7 +6,16 @@
 }
 
 <div class="container mt-5">
-    <h2 class="text-center">Edit Your Team</h2>
+    <div class="d-flex align-items-center justify-content-center mb-2" style="position:relative;">
+        <img id="iconPreviewImg" src="" alt="Icon preview"
+             style="width:48px;height:48px;border-radius:50%;display:none;object-fit:cover;border:2px solid #e1e4e8;margin-right:12px;"
+             onerror="this.style.display='none';document.getElementById('iconPreviewAvatar').style.display='flex';" />
+        <div id="iconPreviewAvatar"
+             style="width:48px;height:48px;border-radius:50%;background:#4a90d9;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;font-weight:700;margin-right:12px;">?
+        </div>
+        <h2 class="mb-0">Edit Your Team</h2>
+        <a href="@Url.Action("Profile", "User")" title="Cancel" style="position:absolute;right:0;color:#dc3545;font-size:1.6rem;line-height:1;text-decoration:none;" aria-label="Cancel">&times;</a>
+    </div>
 
     <div id="teamMessage" class="alert" style="display:none;"></div>
 
@@ -20,18 +29,18 @@
         </div>
 
         <div class="form-group">
-            <label for="Icon" class="control-label col-md-2">Team Icon URL</label>
-            <div class="col-md-10">
-                <input id="Icon" name="Icon" class="form-control" value="@Model.Icon" />
-                <span class="text-danger" id="iconValidation"></span>
-            </div>
-        </div>
-
-        <div class="form-group">
             <label for="Tagline" class="control-label col-md-2">Tagline</label>
             <div class="col-md-10">
                 <input id="Tagline" name="Tagline" class="form-control" value="@Model.Tagline" />
                 <span class="text-danger" id="taglineValidation"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="Icon" class="control-label col-md-2">Team Icon URL <span class="text-muted" style="font-weight:400;">(optional)</span></label>
+            <div class="col-md-10">
+                <input id="Icon" name="Icon" class="form-control" value="@Model.Icon" placeholder="Optional: paste a https:// URL to a .jpg/.png/.svg icon — leave blank for a letter avatar" />
+                <span class="text-danger" id="iconValidation"></span>
             </div>
         </div>
 
@@ -61,8 +70,8 @@
                     isValid = false;
                 }
 
-                if (!icon || !isValidURL(icon)) {
-                    $('#iconValidation').text("A valid image URL is required.");
+                if (icon && !isValidURL(icon)) {
+                    $('#iconValidation').text("If provided, the icon must be a valid URL (https://...).");
                     isValid = false;
                 }
 
@@ -73,7 +82,7 @@
 
                 if (!isValid) return;
 
-                const formData = { Name: name, Icon: icon, Tagline: tagline };
+                const formData = { Name: name, Icon: icon || null, Tagline: tagline };
 
                 $.ajax({
                     url: '@Url.Action("EditTeam", "Team", new { teamId = Model.Teamid })',
@@ -86,8 +95,9 @@
                             .show();
                     },
                     error: function (xhr) {
+                        const msg = xhr.responseText || xhr.statusText || 'Unknown error';
                         $('#teamMessage').removeClass('alert-success').addClass('alert-danger')
-                            .text("🚫 Something went wrong while updating your team.")
+                            .html('🚫 <strong>Something went wrong:</strong> ' + msg)
                             .show();
                     }
                 });
@@ -99,6 +109,42 @@
                     '(\\:[0-9]+)?(\\/.*)?$', 'i');
                 return !!pattern.test(str);
             }
-        });
+            // ── Live icon preview ──────────────────────────────────────────
+            function getInitials(name) {
+                if (!name) return '?';
+                var parts = name.trim().split(/\s+/);
+                return parts.length >= 2
+                    ? (parts[0][0] + parts[1][0]).toUpperCase()
+                    : name.substring(0, 2).toUpperCase();
+            }
+            function getAvatarColor(name) {
+                var colors = ['#4a90d9','#7b68ee','#20b2aa','#ff6b6b','#ffa500','#2e8b57','#9370db','#cd853f'];
+                if (!name) return colors[0];
+                var h = 0;
+                for (var i = 0; i < name.length; i++) h = (h + name.charCodeAt(i)) & 0x7fffffff;
+                return colors[h % colors.length];
+            }
+            function updateIconPreview() {
+                var url  = $('#Icon').val().trim();
+                var name = $('#Name').val().trim();
+                var initials = getInitials(name);
+                var color    = getAvatarColor(name);
+                $('#iconPreviewAvatar').text(initials).css('background', color);
+                if (url && isValidURL(url)) {
+                    $('#iconPreviewImg').attr('src', url).show();
+                    $('#iconPreviewAvatar').hide();
+                } else {
+                    $('#iconPreviewImg').hide().attr('src', '');
+                    $('#iconPreviewAvatar').css('display', 'flex').show();
+                }
+            }
+
+            var _iconTimer = null;
+            $('#Icon').on('input', function () {
+                clearTimeout(_iconTimer);
+                _iconTimer = setTimeout(updateIconPreview, 500);
+            });
+            $('#Name').on('input', updateIconPreview);
+            updateIconPreview();        });
     </script>
 }

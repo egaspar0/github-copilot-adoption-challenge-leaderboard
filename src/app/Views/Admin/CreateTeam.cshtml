@@ -1,0 +1,76 @@
+@model LeaderboardApp.Models.Team
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Admin – Create Team";
+}
+
+<div class="container mt-4" style="max-width:600px;">
+    <h2><span class="glyphicon glyphicon-plus"></span> Create New Team</h2>
+    <p class="text-muted">
+        <a href="@Url.Action("Teams", "Admin")"><span class="glyphicon glyphicon-arrow-left"></span> Back to Teams</a>
+    </p>
+    <hr />
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <form asp-action="CreateTeam" asp-controller="Admin" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewContext.ModelState.IsValid ? "display:none" : "")"></div>
+
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label">Team Name <span class="text-danger">*</span></label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. Team Alpha" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Icon" class="control-label">Icon URL <span class="text-danger">*</span></label>
+                    <input asp-for="Icon" class="form-control" placeholder="https://example.com/icon.png" id="iconInput" />
+                    <span asp-validation-for="Icon" class="text-danger"></span>
+                    <div class="mt-2">
+                        <img id="iconPreview" src="" alt="preview" style="height:48px;width:48px;object-fit:cover;border-radius:4px;display:none;" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Tagline" class="control-label">Tagline <span class="text-danger">*</span></label>
+                    <input asp-for="Tagline" class="form-control" placeholder="A short team motto" />
+                    <span asp-validation-for="Tagline" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="GitHubSlug" class="control-label">GitHub Slug</label>
+                    <input asp-for="GitHubSlug" class="form-control" placeholder="Leave blank to auto-generate from GitHub" />
+                    <p class="help-block">
+                        If left blank and GitHub integration is enabled, a team will be created on GitHub and the slug will be assigned automatically.
+                        If provided, the slug is used as-is (the GitHub team must already exist or will be created with this name).
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">
+                        <span class="glyphicon glyphicon-ok"></span> Create Team
+                    </button>
+                    <a href="@Url.Action("Teams", "Admin")" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('iconInput').addEventListener('input', function () {
+            var preview = document.getElementById('iconPreview');
+            var url = this.value.trim();
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'inline-block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    </script>
+}
