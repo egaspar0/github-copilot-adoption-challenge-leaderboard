@@ -25,7 +25,7 @@ In this end-to-end workflow you will start with a lightweight Product Requiremen
 
 ### Before you start
 
-Enable microphone permissions for Copilot Chat in VS Code. Confirm you have write access to the repository and an available test runner (Jest PyTest JUnit or similar). Create `docs/product-x.prd.md` with a brief description of the new feature.
+Install the [VS Code Speech](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-speech) extension and enable microphone permissions for your browser or VS Code. Confirm you have write access to the repository and an available test runner (Jest PyTest JUnit or similar). Create `docs/product-x.prd.md` with a brief description of the new feature.
 
 ### Steps
 
@@ -64,7 +64,7 @@ Enable microphone permissions for Copilot Chat in VS Code. Confirm you have writ
 
 - [Copilot Agents overview](https://code.visualstudio.com/docs/copilot/chat/chat-agent-mode)
 
-- [Copilot Voice overview](https://githubnext.com/projects/copilot-voice/)
+- [VS Code Speech extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-speech)
 
 - [Personalizing Copilot Voice](https://code.visualstudio.com/docs/configure/accessibility/voice)
 

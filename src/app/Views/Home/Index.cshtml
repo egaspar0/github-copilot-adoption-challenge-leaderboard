@@ -4,6 +4,9 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Home";
+
+    Func<string?, string> _gi = n => { if (string.IsNullOrWhiteSpace(n)) return "?"; var w = n.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries); return w.Length >= 2 ? $"{w[0][0]}{w[1][0]}".ToUpper() : n.Substring(0, Math.Min(2, n.Length)).ToUpper(); };
+    Func<string?, string> _gc = n => { if (string.IsNullOrWhiteSpace(n)) return "#4a90d9"; int h = 0; foreach (char c in n) h = (h + c) & 0x7fffffff; string[] cols = { "#4a90d9","#7b68ee","#20b2aa","#ff6b6b","#ffa500","#2e8b57","#9370db","#cd853f" }; return cols[h % cols.Length]; };
 }
 
 <!-- Main Heading with GitHub Copilot Icon -->
@@ -48,10 +51,22 @@
                 }
                 @foreach (var team in Model.Leaderboard.Take(3))
                 {
+                    var _ini = _gi(team.TeamName); var _col = _gc(team.TeamName);
+                    var _sml = $"width:25px;height:25px;border-radius:50%;background:{_col};display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.65rem;font-weight:700;margin-right:15px;flex-shrink:0;";
                     <tr>
                         <td width="50px" class="text-center" style="font-size: 1.25rem;">@rank</td>
                         <td style="display: flex; align-items: center;">
-                            <img src="@team.TeamIcon" alt="@team.TeamName icon" class="rounded-circle mr-3" style="width: 25px; height: 25px; margin-right: 15px;" />
+                            @if (!string.IsNullOrEmpty(team.TeamIcon))
+                            {
+                                <img src="@team.TeamIcon" alt="@team.TeamName icon"
+                                     style="width:25px;height:25px;border-radius:50%;object-fit:cover;margin-right:15px;flex-shrink:0;"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';" />
+                                <div style="@_sml;display:none;">@_ini</div>
+                            }
+                            else
+                            {
+                                <div style="@_sml">@_ini</div>
+                            }
                             <a href="@Url.Action("Score", "Team", new { teamId = team.TeamId })" style="font-size: 1.25rem; text-decoration: none; color: black;">
                                 @team.TeamName
                             </a>
@@ -134,6 +149,20 @@
                                     <a href="@url" style="text-decoration: none; color: inherit;">
                                         @challenge.Title
                                     </a>
+
+                                    @if (challenge.IsNew)
+                                    {
+                                        <span class="badge" style="background-color:#2da44e; color:#fff; font-size:0.65rem; font-weight:600; border-radius:2em; padding:3px 8px; margin-left:8px; vertical-align:middle;">NEW</span>
+                                    }
+
+                                    @if (challenge.IsCompleted)
+                                    {
+                                        <img src="~/images/tickmarkicon.png" alt="Completed" style="width: 20px; height: 20px; margin-left: auto;" />
+                                    }
+                                    else
+                                    {
+                                        <img src="~/images/pendingicon.png" alt="Pending" style="width: 20px; height: 20px; margin-left: auto;" />
+                                    }
 
                                 </h4>
                             </div>

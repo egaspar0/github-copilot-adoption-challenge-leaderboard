@@ -1,6 +1,8 @@
 ﻿using LeaderboardApp.DTOs;
 using LeaderboardApp.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 namespace LeaderboardApp.Services
@@ -10,63 +12,114 @@ namespace LeaderboardApp.Services
         private readonly GhcacDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<ChallengesService> _logger;
+        private readonly IOptionsSnapshot<ChallengeScheduleConfig> _scheduleConfig;
+        private readonly IConfiguration _configuration;
+        private readonly IAdminService _adminService;
 
         private Guid? _cachedUserId; 
 
-        public ChallengesService(GhcacDbContext context, IHttpContextAccessor httpContextAccessor, ILogger<ChallengesService> logger)
+        public ChallengesService(
+            GhcacDbContext context,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<ChallengesService> logger,
+            IOptionsSnapshot<ChallengeScheduleConfig> scheduleConfig,
+            IConfiguration configuration,
+            IAdminService adminService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
+            _scheduleConfig = scheduleConfig ?? throw new ArgumentNullException(nameof(scheduleConfig));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _adminService = adminService ?? throw new ArgumentNullException(nameof(adminService));
         }
 
         public async Task<List<ChallengeDto>?> GetChallengesAsync()
         {
             var userId = await GetUserIdAsync();
 
-            if (userId.HasValue)
+            if (!userId.HasValue)
             {
-                var completedChallengeIds = await _context.Participantscores
-                    .Where(ps => ps.Participantid == userId.Value)
-                    .Select(ps => ps.Challengeid)
-                    .ToListAsync();
-
-                var completedIdsSet = completedChallengeIds.ToHashSet();
-
-                return await _context.Challenges
-                    .Where(c => c.ActivityId != null && 
-                                (c.ActivityId == 10 || c.ActivityId == 11 || c.ActivityId == 12 || c.ActivityId == 13) &&
-                                (c.PostedDate == null || c.PostedDate <= DateTime.UtcNow))
-                    .Select(c => new ChallengeDto
-                    {
-                        Title = c.Title,
-                        Content = c.Content,
-                        PostedDate = c.PostedDate ?? DateTime.MinValue,
-                        ActivityId = c.ActivityId ?? 0,
-                        ChallengeId = c.ChallengeId,
-                        IsCompleted = completedIdsSet.Contains(c.ChallengeId)
-                    })
-                    .OrderByDescending(c => c.PostedDate)
-                    .ToListAsync();
-            }
-            else
-            {
-                //// Not logged in
-                //return await _context.Challenges
-                //    .Select(c => new ChallengeDto
-                //    {
-                //        Title = c.Title,
-                //        Content = c.Content,
-                //        PostedDate = c.PostedDate ?? DateTime.MinValue,
-                //        ActivityId = c.ActivityId ?? 0,
-                //        ChallengeId = c.ChallengeId,
-                //        IsCompleted = false
-                //    })
-                //    .OrderByDescending(c => c.PostedDate)
-                //    .ToListAsync();
                 return null;
             }
+
+            var completedChallengeIds = await _context.Participantscores
+                .Where(ps => ps.Participantid == userId.Value)
+                .Select(ps => ps.Challengeid)
+                .ToListAsync();
+
+            var completedIdsSet = completedChallengeIds.ToHashSet();
+
+            // Fetch all challenges with valid ActivityIds. No PostedDate filter at the DB level;
+            // availability is resolved in-memory against the schedule config below.
+            var allChallenges = await _context.Challenges
+                .Where(c => c.ActivityId != null &&
+                            (c.ActivityId == 10 || c.ActivityId == 11 || c.ActivityId == 12 || c.ActivityId == 13))
+                .Select(c => new ChallengeDto
+                {
+                    Title = c.Title,
+                    Content = c.Content,
+                    PostedDate = c.PostedDate ?? DateTime.MinValue,
+                    ActivityId = c.ActivityId ?? 0,
+                    ChallengeId = c.ChallengeId,
+                    IsCompleted = completedIdsSet.Contains(c.ChallengeId)
+                })
+                .ToListAsync();
+
+            // Build a quick lookup from the schedule config (challenge-schedule.json)
+            var schedule = _scheduleConfig.Value;
+            var scheduleLookup = schedule.Challenges
+                .ToDictionary(e => e.ChallengeId);
+
+            var now = DateTime.UtcNow;
+            var newBadgeCutoff = now.AddHours(-schedule.NewBadgeDurationHours);
+
+            // Admins bypass the release-date filter and see all challenges immediately.
+            var isAdmin = _adminService.IsAdminUser();
+
+            // Filter, annotate, and sort challenges according to the schedule.
+            var result = allChallenges
+                .Where(c =>
+                {
+                    if (isAdmin) return true; // admins see everything
+
+                    if (scheduleLookup.TryGetValue(c.ChallengeId, out var entry))
+                    {
+                        // Scheduled: visible only on or after the configured ReleaseDate
+                        return entry.ReleaseDate <= now;
+                    }
+                    else
+                    {
+                        // Unscheduled: fall back to the DB PostedDate field
+                        return c.PostedDate == DateTime.MinValue || c.PostedDate <= now;
+                    }
+                })
+                .Select(c =>
+                {
+                    if (scheduleLookup.TryGetValue(c.ChallengeId, out var entry))
+                    {
+                        // Override PostedDate with the schedule's ReleaseDate so the
+                        // displayed date matches the config rather than the DB column.
+                        c.PostedDate = entry.ReleaseDate;
+                        // Mark as NEW for the configured number of hours after release
+                        c.IsNew = entry.ReleaseDate >= newBadgeCutoff;
+                        c.DisplayOrder = entry.Order;
+                    }
+                    else
+                    {
+                        // No schedule entry - DB PostedDate is already set; keep it.
+                        c.IsNew = false;
+                        c.DisplayOrder = int.MaxValue;
+                    }
+                    return c;
+                })
+                // Scheduled challenges appear first in configured order;
+                // unscheduled challenges follow, sorted newest PostedDate first.
+                .OrderBy(c => c.DisplayOrder)
+                .ThenByDescending(c => c.PostedDate)
+                .ToList();
+
+            return result;
         }
 
 
@@ -231,6 +284,7 @@ namespace LeaderboardApp.Services
 
             return _cachedUserId;
         }
+
 
 
         // To check if all team members have completed a challenge

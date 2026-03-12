@@ -1,0 +1,125 @@
+@model LeaderboardApp.ViewModels.AdminTeamsViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Admin – Teams";
+}
+
+<div class="container mt-4">
+    <h2><span class="glyphicon glyphicon-th-large"></span> Manage Teams</h2>
+    <p class="text-muted">
+        <a href="@Url.Action("Index", "Admin")"><span class="glyphicon glyphicon-arrow-left"></span> Back to Admin Dashboard</a>
+    </p>
+    <hr />
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (Model.IsLocked)
+    {
+        <div class="alert alert-warning">
+            <span class="glyphicon glyphicon-lock"></span>
+            <strong>Locked.</strong> The challenge has started - team reorganization is disabled.
+        </div>
+    }
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            @if (!Model.IsLocked)
+            {
+                <a href="@Url.Action("CreateTeam", "Admin")" class="btn btn-success">
+                    <span class="glyphicon glyphicon-plus"></span> Create New Team
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-success" disabled title="Locked while challenge is active">
+                    <span class="glyphicon glyphicon-plus"></span> Create New Team
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>@Model.Teams.Count teams</strong></div>
+        <div class="panel-body" style="overflow-x:auto;">
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">Icon</th>
+                        <th>Name</th>
+                        <th>Tagline</th>
+                        <th>GitHub Slug</th>
+                        <th style="width:180px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var team in Model.Teams)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                @if (!string.IsNullOrWhiteSpace(team.Icon))
+                                {
+                                    <img src="@team.Icon" alt="@team.Name icon" style="height:32px; width:32px; object-fit:cover; border-radius:4px;" onerror="this.style.display='none'" />
+                                }
+                            </td>
+                            <td><strong>@team.Name</strong></td>
+                            <td>@team.Tagline</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(team.GitHubSlug))
+                                {
+                                    <code>@team.GitHubSlug</code>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td style="white-space:nowrap;">
+                                @if (!Model.IsLocked)
+                                {
+                                    <a href="@Url.Action("EditTeam", "Admin", new { teamId = team.Teamid })" class="btn btn-primary btn-xs">
+                                        <span class="glyphicon glyphicon-pencil"></span> Edit
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-primary btn-xs" disabled title="Locked while challenge is active">
+                                        <span class="glyphicon glyphicon-pencil"></span> Edit
+                                    </button>
+                                }
+                                &nbsp;
+                                <form method="post" action="@Url.Action("DeleteTeam", "Admin", new { teamId = team.Teamid })" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn btn-danger btn-xs"
+                                            @(Model.IsLocked ? "disabled" : "")
+                                            title="Delete team and unassign all participants"
+                                            onclick="return confirm('Delete team &quot;@team.Name&quot;? All participants will be unassigned. This cannot be undone.');">
+                                        <span class="glyphicon glyphicon-trash"></span> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Teams.Any())
+                    {
+                        <tr><td colspan="5" class="text-center text-muted">No teams found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
