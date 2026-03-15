@@ -30,12 +30,12 @@ namespace LeaderboardApp.Controllers
             return null;
         }
 
-        /// <summary>Returns an error redirect when reorganization is locked (challenge has started).</summary>
+        /// <summary>Returns an error redirect when team reorganization is locked.</summary>
         private IActionResult? RequireNotStarted(string returnAction)
         {
-            if (_adminService.IsChallengeStarted())
+            if (_adminService.IsTeamReorgLocked())
             {
-                TempData["Error"] = "Reorganization is locked because the challenge has already started.";
+                TempData["Error"] = "Team reorganization is locked. Set TeamReorgLocked=false in config to re-enable.";
                 return RedirectToAction(returnAction);
             }
             return null;
@@ -49,7 +49,7 @@ namespace LeaderboardApp.Controllers
         {
             if (RequireAdmin() is { } forbidden) return forbidden;
 
-            ViewBag.IsLocked = _adminService.IsChallengeStarted();
+            ViewBag.IsLocked = _adminService.IsTeamReorgLocked();
             ViewBag.ParticipantCount = (await _adminService.GetAllParticipantsWithTeamsAsync()).Count;
             ViewBag.TeamCount = (await _adminService.GetAllTeamsAsync()).Count;
             return View();
@@ -67,7 +67,7 @@ namespace LeaderboardApp.Controllers
             {
                 Participants = await _adminService.GetAllParticipantsWithTeamsAsync(),
                 AllTeams = await _adminService.GetAllTeamsAsync(),
-                IsLocked = _adminService.IsChallengeStarted()
+                IsLocked = _adminService.IsTeamReorgLocked()
             };
             return View(vm);
         }
@@ -146,7 +146,7 @@ namespace LeaderboardApp.Controllers
             var vm = new AdminTeamsViewModel
             {
                 Teams = await _adminService.GetAllTeamsAsync(),
-                IsLocked = _adminService.IsChallengeStarted()
+                IsLocked = _adminService.IsTeamReorgLocked()
             };
             return View(vm);
         }
@@ -155,9 +155,9 @@ namespace LeaderboardApp.Controllers
         public IActionResult CreateTeam()
         {
             if (RequireAdmin() is { } forbidden) return forbidden;
-            if (_adminService.IsChallengeStarted())
+            if (_adminService.IsTeamReorgLocked())
             {
-                TempData["Error"] = "Reorganization is locked because the challenge has already started.";
+                TempData["Error"] = "Team reorganization is locked. Set TeamReorgLocked=false in config to re-enable.";
                 return RedirectToAction("Teams");
             }
             return View(new Team());
@@ -191,9 +191,9 @@ namespace LeaderboardApp.Controllers
         public async Task<IActionResult> EditTeam(Guid teamId)
         {
             if (RequireAdmin() is { } forbidden) return forbidden;
-            if (_adminService.IsChallengeStarted())
+            if (_adminService.IsTeamReorgLocked())
             {
-                TempData["Error"] = "Reorganization is locked because the challenge has already started.";
+                TempData["Error"] = "Team reorganization is locked. Set TeamReorgLocked=false in config to re-enable.";
                 return RedirectToAction("Teams");
             }
 

@@ -8,8 +8,11 @@ namespace LeaderboardApp.Services
         /// <summary>Returns true if the currently authenticated user is in the ChallengeSettings:Admin list.</summary>
         bool IsAdminUser();
 
-        /// <summary>Returns true when ChallengeSettings:ChallengeStarted is true (reorganization is locked).</summary>
+        /// <summary>Returns true when ChallengeSettings:ChallengeStarted is true.</summary>
         bool IsChallengeStarted();
+
+        /// <summary>Returns true when ChallengeSettings:TeamReorgLocked is true (team moves/creates/deletes are frozen).</summary>
+        bool IsTeamReorgLocked();
 
         Task<List<AdminParticipantViewModel>> GetAllParticipantsWithTeamsAsync();
         Task<List<Team>> GetAllTeamsAsync();

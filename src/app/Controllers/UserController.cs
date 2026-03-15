@@ -147,6 +147,7 @@ namespace LeaderboardApp.Controllers
                 ViewBag.FullTeamIds = fullTeamIds;
                 ViewBag.Teams = teams;
                 ViewBag.ChallengeStarted = _configuration.GetValue<bool>("ChallengeSettings:ChallengeStarted");
+                ViewBag.TeamReorgLocked = _configuration.GetValue<bool>("ChallengeSettings:TeamReorgLocked");
 
                 // Get last activity time from GitHub Service
                 try

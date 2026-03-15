@@ -52,6 +52,11 @@ namespace LeaderboardApp.Services
             return _configuration.GetValue<bool>("ChallengeSettings:ChallengeStarted", false);
         }
 
+        public bool IsTeamReorgLocked()
+        {
+            return _configuration.GetValue<bool>("ChallengeSettings:TeamReorgLocked", false);
+        }
+
         // ────────────────────────────────────────────────────
         //  Read operations
         // ────────────────────────────────────────────────────
