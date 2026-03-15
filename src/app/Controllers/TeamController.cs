@@ -68,6 +68,7 @@ namespace LeaderboardApp.Controllers
 
             // Create and save to DB
             team.Teamid = Guid.NewGuid();
+            team.Icon = team.Icon ?? "";
             _context.Teams.Add(team);
 
             var leaderboardEntry = new Leaderboardentry
@@ -108,7 +109,7 @@ namespace LeaderboardApp.Controllers
 
             // Update team properties
             team.Name = updatedTeam.Name;
-            team.Icon = updatedTeam.Icon;
+            team.Icon = updatedTeam.Icon ?? "";
             team.Tagline = updatedTeam.Tagline;
 
             _context.Teams.Update(team);

@@ -80,6 +80,48 @@ namespace LeaderboardApp.Controllers
                     }
                 }
 
+                // ── Auto-populate GitHub handle via SCIM on first login (or whenever it is still missing) ─
+                if (string.IsNullOrWhiteSpace(user.Githubhandle))
+                {
+                    try
+                    {
+                        // The Entra OID claim name differs between JWT and legacy WS-Fed tokens
+                        var oid = User.FindFirstValue("oid")
+                            ?? User.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier");
+                        var upn = User.FindFirstValue(ClaimTypes.Email)
+                            ?? User.FindFirstValue("preferred_username")
+                            ?? User.FindFirstValue("emails");
+
+                        var scimHandle = await _gitHubService.LookupGitHubLoginByScimAsync(oid, upn);
+                        if (!string.IsNullOrEmpty(scimHandle))
+                        {
+                            user.Githubhandle = scimHandle;
+                            try
+                            {
+                                await _context.SaveChangesAsync();
+                                _logger.LogInformation(
+                                    "Auto-populated GitHub handle '{Handle}' for participant {ParticipantId} via SCIM.",
+                                    scimHandle, user.Participantid);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to persist SCIM-resolved GitHub handle for participant {ParticipantId}.", user.Participantid);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogInformation("SCIM lookup returned no GitHub handle for participant {ParticipantId}.", user.Participantid);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error during SCIM GitHub handle auto-population for participant {ParticipantId}.", user.Participantid);
+                    }
+                }
+
+                ViewBag.GitHubHandleAutoFilled = !string.IsNullOrWhiteSpace(user.Githubhandle);
+                ViewBag.GitHubEnabled = _configuration.GetValue<bool>("GitHubSettings:Enabled", false);
+
                 // Fetch teams with participants less than the configured max number
                 List<Team> teams;
                 HashSet<Guid> fullTeamIds;
@@ -105,6 +147,7 @@ namespace LeaderboardApp.Controllers
                 ViewBag.FullTeamIds = fullTeamIds;
                 ViewBag.Teams = teams;
                 ViewBag.ChallengeStarted = _configuration.GetValue<bool>("ChallengeSettings:ChallengeStarted");
+                ViewBag.TeamReorgLocked = _configuration.GetValue<bool>("ChallengeSettings:TeamReorgLocked");
 
                 // Get last activity time from GitHub Service
                 try
@@ -164,6 +207,24 @@ namespace LeaderboardApp.Controllers
                 // Detect GitHub handle change
                 var oldGitHubHandle = participant.Githubhandle;
                 var newGitHubHandle = model.Githubhandle;
+
+                // If the participant already has a GitHub handle (set via SCIM or by an admin)
+                // do not allow self-service changes — admins use the Admin dashboard.
+                if (!string.IsNullOrWhiteSpace(participant.Githubhandle) &&
+                    participant.Githubhandle != newGitHubHandle)
+                {
+                    return BadRequest(new { message = "Your GitHub handle has been set by the system or an admin and cannot be changed here. Please contact an admin to update it." });
+                }
+
+                // If a new handle is submitted for a participant who has none, validate org membership.
+                if (string.IsNullOrWhiteSpace(participant.Githubhandle) && !string.IsNullOrWhiteSpace(newGitHubHandle))
+                {
+                    bool isMember = await _gitHubService.IsOrgMemberAsync(newGitHubHandle);
+                    if (!isMember)
+                    {
+                        return BadRequest(new { message = $"The GitHub handle '{newGitHubHandle}' is not a confirmed member of the RACWA GitHub organisation. Please contact an admin if you believe this is incorrect." });
+                    }
+                }
 
                 // Query to check GitHubHandle and MsLearnHandle conflicts
                 if (!string.IsNullOrWhiteSpace(newGitHubHandle) || !string.IsNullOrWhiteSpace(model.Mslearnhandle))
@@ -388,22 +449,32 @@ namespace LeaderboardApp.Controllers
 
                 var participantId = participant.Participantid;
 
-                // Check if the user has already completed the activity
-                var alreadyClicked = await _context.Participantscores
-                    .AnyAsync(ps => ps.Participantid == participantId
-                                  && ps.Activityid == model.ActivityId);
-
-                if (!alreadyClicked)
+                // Use a transaction to prevent race-condition double-awards
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    // If not clicked before, add the score for this activity
+                    // Re-check inside the transaction (serializable read)
+                    var alreadyClicked = await _context.Participantscores
+                        .AnyAsync(ps => ps.Participantid == participantId
+                                      && ps.Activityid == model.ActivityId);
+
+                    if (alreadyClicked)
+                    {
+                        await transaction.RollbackAsync();
+                        return Ok(new { success = true, message = "You've already clicked this link. No score added." });
+                    }
+
+                    // Validate activity exists and is a link-type
                     var activity = await _context.Activities.FindAsync(model.ActivityId);
                     if (activity == null)
                     {
+                        await transaction.RollbackAsync();
                         return NotFound(new { success = false, message = "Activity not found." });
                     }
 
                     if (!activity.Name.ToLowerInvariant().Contains("link"))
                     {
+                        await transaction.RollbackAsync();
                         return BadRequest(new { success = false, message = "Activity not of type link." });
                     }
 
@@ -422,26 +493,21 @@ namespace LeaderboardApp.Controllers
                         Challengeid = challengeId,
                         Score = activity.Weight,
                         Timestamp = DateTime.UtcNow,
-                        Teamid = participant.Teamid ?? Guid.Empty // Use team ID or default if not in a team
+                        Teamid = participant.Teamid ?? Guid.Empty
                     };
 
                     _context.Participantscores.Add(participantScore);
-
-                    try
-                    {
-                        await _context.SaveChangesAsync();
-                        return Ok(new { success = true, message = "Score added!" });
-                    }
-                    catch (DbUpdateException ex)
-                    {
-                        _logger.LogError(ex, "Database error while adding participant score for {ParticipantId}, Activity {ActivityId}",
-                            participantId, model.ActivityId);
-                        return StatusCode(500, new { success = false, message = "Failed to record your activity." });
-                    }
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return Ok(new { success = true, message = "Score added!" });
                 }
-
-                // If already clicked, return success but no score added
-                return Ok(new { success = true, message = "You've already clicked this link. No score added." });
+                catch (DbUpdateException ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Database error while adding participant score for {ParticipantId}, Activity {ActivityId}",
+                        participantId, model.ActivityId);
+                    return StatusCode(500, new { success = false, message = "Failed to record your activity." });
+                }
             }
             catch (Exception ex)
             {

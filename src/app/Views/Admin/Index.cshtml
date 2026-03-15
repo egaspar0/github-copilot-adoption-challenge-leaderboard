@@ -1,0 +1,101 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Admin Dashboard";
+    bool isLocked = ViewBag.IsLocked ?? false;
+    int participantCount = ViewBag.ParticipantCount ?? 0;
+    int teamCount = ViewBag.TeamCount ?? 0;
+}
+
+<div class="container mt-4">
+    <h2><span class="glyphicon glyphicon-cog"></span> Admin Dashboard</h2>
+    <hr />
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (isLocked)
+    {
+        <div class="alert alert-warning">
+            <span class="glyphicon glyphicon-lock"></span>
+            <strong>Challenge has started.</strong> Reorganization (moving/creating/deleting participants and teams) is locked.
+            GitHub Sync is still available.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <span class="glyphicon glyphicon-info-sign"></span>
+            The challenge has <strong>not started</strong>. You can reorganize participants and teams freely.
+        </div>
+    }
+
+    <div class="row mt-4">
+        <!-- Participants card -->
+        <div class="col-md-4">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-user"></span> Participants</h3>
+                </div>
+                <div class="panel-body">
+                    <p class="text-center" style="font-size:2em; font-weight:bold;">@participantCount</p>
+                    <p class="text-center text-muted">registered participants</p>
+                </div>
+                <div class="panel-footer text-center">
+                    <a href="@Url.Action("Participants", "Admin")" class="btn btn-primary btn-sm">
+                        <span class="glyphicon glyphicon-list"></span> Manage Participants
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teams card -->
+        <div class="col-md-4">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-th-large"></span> Teams</h3>
+                </div>
+                <div class="panel-body">
+                    <p class="text-center" style="font-size:2em; font-weight:bold;">@teamCount</p>
+                    <p class="text-center text-muted">registered teams</p>
+                </div>
+                <div class="panel-footer text-center">
+                    <a href="@Url.Action("Teams", "Admin")" class="btn btn-success btn-sm">
+                        <span class="glyphicon glyphicon-list"></span> Manage Teams
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sync card -->
+        <div class="col-md-4">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-refresh"></span> GitHub Sync</h3>
+                </div>
+                <div class="panel-body">
+                    <p class="text-muted">
+                        Compare the database (source of truth) with live GitHub team memberships.
+                        Discrepancies are reported - no changes are made automatically.
+                    </p>
+                </div>
+                <div class="panel-footer text-center">
+                    <a href="@Url.Action("Sync", "Admin")" class="btn btn-info btn-sm">
+                        <span class="glyphicon glyphicon-refresh"></span> Run Sync Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

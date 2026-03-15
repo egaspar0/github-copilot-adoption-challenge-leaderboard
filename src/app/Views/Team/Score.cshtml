@@ -36,12 +36,41 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Home";
+
+    Func<string?, string> _getInitials = name => {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var words = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return words.Length >= 2
+            ? $"{words[0][0]}{words[1][0]}".ToUpper()
+            : name.Substring(0, Math.Min(2, name.Length)).ToUpper();
+    };
+    string[] _avatarColors = { "#4a90d9", "#7b68ee", "#20b2aa", "#ff6b6b", "#ffa500", "#2e8b57", "#9370db", "#cd853f" };
+    Func<string?, string> _getAvatarColor = name => {
+        if (string.IsNullOrWhiteSpace(name)) return "#4a90d9";
+        int h = 0; foreach (char c in name) h = (h + c) & 0x7fffffff;
+        string[] colors = { "#4a90d9", "#7b68ee", "#20b2aa", "#ff6b6b", "#ffa500", "#2e8b57", "#9370db", "#cd853f" };
+        return colors[h % colors.Length];
+    };
+
+    var _initials = _getInitials(teamName);
+    var _color    = _getAvatarColor(teamName);
+    var _avatarStyle = $"width:80px;height:80px;border-radius:50%;background:{_color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.75rem;font-weight:700;";
 }
 
 <div class="container mt-4">
     <!-- Team Header -->
     <div class="text-center mb-4">
-        <img src="@teamIcon" alt="@teamName icon" style="width: 80px; height: 80px; border-radius: 50%;" />
+        @if (!string.IsNullOrEmpty(teamIcon))
+        {
+            <img src="@teamIcon" alt="@teamName icon"
+                 style="width:80px;height:80px;border-radius:50%;object-fit:cover;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+            <div style="@_avatarStyle;display:none;margin:0 auto;">@_initials</div>
+        }
+        else
+        {
+            <div style="@_avatarStyle;margin:0 auto;">@_initials</div>
+        }
         <h1 style="font-size: 2.5rem; margin-top: 10px;">@teamName</h1>
         <p class="lead" style="color: #666;">@teamTagline</p>
         <h3 class="text-success" style="margin-top: 10px;">Score: <strong>@ViewBag.TotalScore.ToString("F0")</strong></h3>
@@ -80,7 +109,7 @@
                         {
                             var template = individualActivityTemplates[rand.Next(individualActivityTemplates.Length)];
                             <li class="list-group-item" style="font-size: 1.2rem;">
-                                @Html.Raw(string.Format(template, score.Nickname, score.Score.ToString("F0"), score.ActivityName))
+                                @Html.Raw(string.Format(template, Html.Encode(score.Nickname), score.Score.ToString("F0"), score.ActivityName))
                                 <span class="text-muted float-end">@score.Timestamp?.ToLocalTime().ToString("t")</span>
                             </li>
                         }

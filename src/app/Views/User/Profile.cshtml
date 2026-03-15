@@ -41,8 +41,31 @@
         <div class="form-group">
             <label for="Githubhandle" class="control-label col-md-2">GitHub Handle</label>
             <div class="col-md-10">
-                <input asp-for="Githubhandle" class="form-control" id="Githubhandle" value="@Model.Githubhandle" @(ViewBag.ChallengeStarted ? "disabled" : "") />
+                @{
+                    bool ghAutoFilled = (bool)(ViewBag.GitHubHandleAutoFilled ?? false);
+                    bool ghDisabled   = (bool)(ViewBag.ChallengeStarted ?? false) || ghAutoFilled;
+                }
+                <input asp-for="Githubhandle" class="form-control" id="Githubhandle"
+                       value="@Model.Githubhandle"
+                       @(ghDisabled ? "disabled" : "")
+                       placeholder="e.g. octocat" />
                 <span asp-validation-for="Githubhandle" class="text-danger"></span>
+                @if (ghAutoFilled)
+                {
+                    <p class="help-block" style="margin-top:4px;">
+                        <span class="glyphicon glyphicon-ok-sign text-success"></span>
+                        Auto-populated from your RACWA GitHub organisation membership. Contact an admin to change.
+                    </p>
+                }
+                else if ((bool)(ViewBag.GitHubEnabled ?? false))
+                {
+                    <p class="help-block text-warning" style="margin-top:4px;">
+                        <span class="glyphicon glyphicon-warning-sign"></span>
+                        Your GitHub account could not be found automatically in the RACWA organisation.
+                        You may enter your handle below &mdash; it must already be a member of the RACWA org.
+                        Contact an admin if you need assistance.
+                    </p>
+                }
             </div>
         </div>
 
@@ -81,7 +104,7 @@
         <div class="form-group" style="background-color: #f7f7f7; padding: 15px; border-radius: 5px; border: 1px solid #ccc;">
             <label for="Teamid" class="control-label col-md-2" style="font-weight: bold; font-size: 1.2rem;">Join Team</label>
             <div class="col-md-7">
-                <select asp-for="Teamid" class="form-control" id="Teamid" @(ViewBag.ChallengeStarted ? "disabled" : "")>
+                <select asp-for="Teamid" class="form-control" id="Teamid" @(ViewBag.TeamReorgLocked ? "disabled" : "")>
                     <option value="">No team selected</option>
                     @foreach (var team in ViewBag.Teams)
                     {
@@ -97,13 +120,13 @@
 
             <!-- "Edit Team" Button -->
             <div class="col-md-1">
-                <a id="editTeamBtn" href="#" class="btn btn-success @(ViewBag.ChallengeStarted ? "disabled" : "")">Edit Team</a>
+                <a id="editTeamBtn" href="#" class="btn btn-success @(ViewBag.TeamReorgLocked ? "disabled" : "")">Edit Team</a>
             </div>
 
 
             <!-- "Add Team" Button -->
             <div class="col-md-1">
-                <a href="@Url.Action("AddTeam", "Team")" class="btn btn-success @(ViewBag.ChallengeStarted ? "disabled" : "")">Add Team</a>
+                <a href="@Url.Action("AddTeam", "Team")" class="btn btn-success @(ViewBag.TeamReorgLocked ? "disabled" : "")">Add Team</a>
             </div>
 
         </div>

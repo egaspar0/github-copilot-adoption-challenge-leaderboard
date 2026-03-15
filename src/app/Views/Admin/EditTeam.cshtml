@@ -1,0 +1,81 @@
+@model LeaderboardApp.Models.Team
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Admin – Edit Team";
+}
+
+<div class="container mt-4" style="max-width:600px;">
+    <h2><span class="glyphicon glyphicon-pencil"></span> Edit Team</h2>
+    <p class="text-muted">
+        <a href="@Url.Action("Teams", "Admin")"><span class="glyphicon glyphicon-arrow-left"></span> Back to Teams</a>
+    </p>
+    <hr />
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <form asp-action="EditTeam" asp-controller="Admin" asp-route-teamId="@Model.Teamid" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewContext.ModelState.IsValid ? "display:none" : "")"></div>
+
+                <input type="hidden" asp-for="Teamid" />
+
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label">Team Name <span class="text-danger">*</span></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Icon" class="control-label">Icon URL <span class="text-danger">*</span></label>
+                    <input asp-for="Icon" class="form-control" id="iconInput" />
+                    <span asp-validation-for="Icon" class="text-danger"></span>
+                    <div class="mt-2">
+                        <img id="iconPreview" src="@Model.Icon" alt="icon preview"
+                             style="height:48px;width:48px;object-fit:cover;border-radius:4px;@(string.IsNullOrWhiteSpace(Model.Icon) ? "display:none;" : "")"
+                             onerror="this.style.display='none'" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Tagline" class="control-label">Tagline <span class="text-danger">*</span></label>
+                    <input asp-for="Tagline" class="form-control" />
+                    <span asp-validation-for="Tagline" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="GitHubSlug" class="control-label">GitHub Slug</label>
+                    <input asp-for="GitHubSlug" class="form-control" />
+                    <p class="help-block">
+                        <span class="glyphicon glyphicon-warning-sign text-warning"></span>
+                        Changing the GitHub slug here does <strong>not</strong> rename the team on GitHub.
+                        Update the GitHub team separately if the slug changes.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-ok"></span> Save Changes
+                    </button>
+                    <a href="@Url.Action("Teams", "Admin")" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('iconInput').addEventListener('input', function () {
+            var preview = document.getElementById('iconPreview');
+            var url = this.value.trim();
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'inline-block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    </script>
+}

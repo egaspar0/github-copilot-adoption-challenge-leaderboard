@@ -1,0 +1,173 @@
+@model LeaderboardApp.ViewModels.SyncResultViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Admin – GitHub Sync Report";
+}
+
+<div class="container mt-4">
+    <h2><span class="glyphicon glyphicon-refresh"></span> GitHub Sync Report</h2>
+    <p class="text-muted">
+        <a href="@Url.Action("Index", "Admin")"><span class="glyphicon glyphicon-arrow-left"></span> Back to Admin Dashboard</a>
+    </p>
+    <hr />
+
+    <div class="alert alert-info">
+        <span class="glyphicon glyphicon-info-sign"></span>
+        <strong>Read-only report.</strong> The database is the source of truth.
+        This report identifies discrepancies between GitHub team memberships and the database - <strong>no changes have been made</strong>.
+        Manually update GitHub or the database to resolve any discrepancies shown below.
+    </div>
+
+    @if (Model.GitHubDisabled)
+    {
+        <div class="alert alert-warning">
+            <span class="glyphicon glyphicon-warning-sign"></span>
+            <strong>GitHub integration is disabled</strong> (<code>GitHubSettings:Enabled = false</code>).
+            Sync results below reflect empty GitHub team membership (no API calls were made).
+        </div>
+    }
+
+    @if (!Model.Reports.Any())
+    {
+        <div class="alert alert-warning">
+            No teams with a GitHub slug were found in the database.
+            Add a GitHub slug to your teams to enable sync reporting.
+        </div>
+    }
+    else
+    {
+        var inSyncCount = Model.Reports.Count(r => !r.HasDiscrepancies && r.Error == null);
+        var discrepancyCount = Model.Reports.Count(r => r.HasDiscrepancies);
+        var errorCount = Model.Reports.Count(r => r.Error != null);
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-success text-center">
+                    <div class="panel-body">
+                        <h3>@inSyncCount</h3>
+                        <p class="text-muted">In sync</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel @(discrepancyCount > 0 ? "panel-warning" : "panel-default") text-center">
+                    <div class="panel-body">
+                        <h3>@discrepancyCount</h3>
+                        <p class="text-muted">Teams with discrepancies</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel @(errorCount > 0 ? "panel-danger" : "panel-default") text-center">
+                    <div class="panel-body">
+                        <h3>@errorCount</h3>
+                        <p class="text-muted">Errors</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        foreach (var report in Model.Reports.OrderByDescending(r => r.HasDiscrepancies || r.Error != null))
+        {
+            string panelClass = report.Error != null ? "panel-danger"
+                              : report.HasDiscrepancies   ? "panel-warning"
+                              : "panel-success";
+
+            string statusBadge = report.Error != null ? "<span class='label label-danger'>Error</span>"
+                               : report.HasDiscrepancies  ? "<span class='label label-warning'>Discrepancies Found</span>"
+                               : "<span class='label label-success'>In Sync</span>";
+
+            <div class="panel @panelClass">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <span class="glyphicon glyphicon-th-large"></span>
+                        @report.TeamName
+                        <small><code>@report.GitHubSlug</code></small>
+                        &nbsp; @Html.Raw(statusBadge)
+                    </h4>
+                </div>
+                <div class="panel-body">
+                    @if (report.Error != null)
+                    {
+                        <div class="alert alert-danger mb-0">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>
+                            <strong>Failed to fetch GitHub data:</strong> @report.Error
+                        </div>
+                    }
+                    else if (!report.HasDiscrepancies)
+                    {
+                        <p class="text-success mb-0">
+                            <span class="glyphicon glyphicon-ok-circle"></span>
+                            GitHub team membership matches the database exactly.
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-danger">
+                                    <span class="glyphicon glyphicon-arrow-right"></span>
+                                    In GitHub but <strong>not</strong> in DB (@report.InGitHubNotInDb.Count)
+                                </h5>
+                                @if (report.InGitHubNotInDb.Any())
+                                {
+                                    <p class="text-muted" style="font-size:12px;">
+                                        These GitHub users are on the GitHub team but have no matching
+                                        <code>Githubhandle</code> in the database for this team.
+                                        Consider adding them to the DB or removing them from GitHub.
+                                    </p>
+                                    <ul class="list-group">
+                                        @foreach (var handle in report.InGitHubNotInDb)
+                                        {
+                                            <li class="list-group-item list-group-item-danger">
+                                                <a href="https://github.com/@handle" target="_blank">
+                                                    <span class="glyphicon glyphicon-user"></span> @handle
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="text-muted"><em>None</em></p>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-warning">
+                                    <span class="glyphicon glyphicon-arrow-left"></span>
+                                    In DB but <strong>not</strong> on GitHub (@report.InDbNotInGitHub.Count)
+                                </h5>
+                                @if (report.InDbNotInGitHub.Any())
+                                {
+                                    <p class="text-muted" style="font-size:12px;">
+                                        These participants are assigned to this team in the database but are
+                                        missing from the GitHub team. Consider adding them to GitHub.
+                                    </p>
+                                    <ul class="list-group">
+                                        @foreach (var handle in report.InDbNotInGitHub)
+                                        {
+                                            <li class="list-group-item list-group-item-warning">
+                                                <a href="https://github.com/@handle" target="_blank">
+                                                    <span class="glyphicon glyphicon-user"></span> @handle
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="text-muted"><em>None</em></p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <p class="text-muted text-right">
+            <small>Sync run at @DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") UTC</small>
+        </p>
+    }
+</div>

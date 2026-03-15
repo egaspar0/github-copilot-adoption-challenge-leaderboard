@@ -1,4 +1,5 @@
 ﻿using LeaderboardApp.Models;
+using LeaderboardApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
@@ -11,16 +12,19 @@ namespace LeaderboardApp.Controllers
     public class ParticipantsController : ControllerBase
     {
         private readonly GhcacDbContext _context;
+        private readonly IAdminService _adminService;
 
-        public ParticipantsController(GhcacDbContext context)
+        public ParticipantsController(GhcacDbContext context, IAdminService adminService)
         {
             _context = context;
+            _adminService = adminService;
         }
 
         // GET: api/participants
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Participant>>> GetParticipants()
         {
+            if (!_adminService.IsAdminUser()) return Forbid();
             return await _context.Participants.ToListAsync();
         }
 
@@ -28,6 +32,7 @@ namespace LeaderboardApp.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Participant>> GetParticipant(Guid id)
         {
+            if (!_adminService.IsAdminUser()) return Forbid();
             var participant = await _context.Participants.FindAsync(id);
 
             if (participant == null)
@@ -42,6 +47,7 @@ namespace LeaderboardApp.Controllers
         [HttpPost]
         public async Task<ActionResult<Participant>> CreateParticipant(Participant participant)
         {
+            if (!_adminService.IsAdminUser()) return Forbid();
             _context.Participants.Add(participant);
             await _context.SaveChangesAsync();
 
@@ -52,6 +58,8 @@ namespace LeaderboardApp.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateParticipant(Guid id, Participant participant)
         {
+            if (!_adminService.IsAdminUser()) return Forbid();
+
             if (id != participant.Participantid)
             {
                 return BadRequest();
@@ -82,6 +90,8 @@ namespace LeaderboardApp.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteParticipant(Guid id)
         {
+            if (!_adminService.IsAdminUser()) return Forbid();
+
             var participant = await _context.Participants.FindAsync(id);
             if (participant == null)
             {

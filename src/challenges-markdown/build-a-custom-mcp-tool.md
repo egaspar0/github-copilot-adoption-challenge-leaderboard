@@ -19,7 +19,7 @@ In this advanced exercise you will fork your organisation’s local **Model-Cont
 
 ### Before you start
 
-Install the latest **GitHub Copilot Nightly** extension in VS Code and enable Agent mode under **Settings > GitHub Copilot > Agents**. Make sure you have: 1. An organisation repo named `mcp-server` (or similar) you can fork. 2. A Jira cloud instance and a personal API token. 3. `node` or `python` (match the server’s language) installed locally.
+Install the latest **GitHub Copilot** extension in VS Code and enable Agent mode under **Settings > GitHub Copilot > Agents**. Make sure you have: 1. An organisation repo named `mcp-server` (or similar) you can fork. 2. A Jira cloud instance and a personal API token. 3. `node` or `python` (match the server’s language) installed locally.
 
 ### Steps
 

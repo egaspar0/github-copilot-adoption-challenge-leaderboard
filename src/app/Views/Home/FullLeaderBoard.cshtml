@@ -3,6 +3,9 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Leaderboard";
+
+    Func<string?, string> _gi = n => { if (string.IsNullOrWhiteSpace(n)) return "?"; var w = n.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries); return w.Length >= 2 ? $"{w[0][0]}{w[1][0]}".ToUpper() : n.Substring(0, Math.Min(2, n.Length)).ToUpper(); };
+    Func<string?, string> _gc = n => { if (string.IsNullOrWhiteSpace(n)) return "#4a90d9"; int h = 0; foreach (char c in n) h = (h + c) & 0x7fffffff; string[] cols = { "#4a90d9","#7b68ee","#20b2aa","#ff6b6b","#ffa500","#2e8b57","#9370db","#cd853f" }; return cols[h % cols.Length]; };
 }
 
 <div class="row">
@@ -36,10 +39,22 @@
                 }
                 @foreach (var team in Model)
                 {
+                    var _ini = _gi(team.TeamName); var _col = _gc(team.TeamName);
+                    var _med = $"width:40px;height:40px;border-radius:50%;background:{_col};display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;font-weight:700;float:left;margin-right:10px;flex-shrink:0;";
                     <tr>
                         <td width="50px" class="text-center">@rank</td>
                         <td>
-                            <img src="@team.TeamIcon" alt="@team.TeamName icon" class="rounded-circle mr-3" style="width: 40px; height: 40px; float: left; margin-right: 10px;" />
+                            @if (!string.IsNullOrEmpty(team.TeamIcon))
+                            {
+                                <img src="@team.TeamIcon" alt="@team.TeamName icon"
+                                     style="width:40px;height:40px;border-radius:50%;object-fit:cover;float:left;margin-right:10px;"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';" />
+                                <div style="@_med;display:none;">@_ini</div>
+                            }
+                            else
+                            {
+                                <div style="@_med">@_ini</div>
+                            }
 
                             <div style="display: inline-block;">
                                 <div><strong>
