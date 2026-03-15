@@ -37,5 +37,13 @@ namespace LeaderboardApp.Services
         /// Returns a report per team listing discrepancies - no changes are made.
         /// </summary>
         Task<List<TeamSyncReport>> SyncGitHubTeamsAsync();
+
+        /// <summary>
+        /// Sets or replaces a participant's GitHub handle in the DB and syncs GitHub team membership.
+        /// If the participant is assigned to a team, the old handle is removed from the GitHub team
+        /// and the new handle is added. Passing null/empty clears the handle and removes from the team.
+        /// This operation is NOT gated by ChallengeStarted — admins can correct handles at any time.
+        /// </summary>
+        Task SetParticipantGitHubHandleAsync(Guid participantId, string? newHandle);
     }
 }

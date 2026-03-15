@@ -256,6 +256,32 @@ namespace LeaderboardApp.Controllers
         }
 
         // ─────────────────────────────────────────────────────────────────────
+        //  GitHub handle (always available - not gated by ChallengeStarted)
+        // ─────────────────────────────────────────────────────────────────────
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetGitHubHandle(Guid participantId, string? githubHandle)
+        {
+            if (RequireAdmin() is { } forbidden) return forbidden;
+
+            try
+            {
+                await _adminService.SetParticipantGitHubHandleAsync(participantId, githubHandle);
+                TempData["Success"] = string.IsNullOrWhiteSpace(githubHandle)
+                    ? "GitHub handle cleared."
+                    : $"GitHub handle set to '{githubHandle.Trim()}'";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting GitHub handle for participant {ParticipantId}", participantId);
+                TempData["Error"] = $"Failed to update GitHub handle: {ex.Message}";
+            }
+
+            return RedirectToAction("Participants");
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
         //  Sync (always available - read-only comparison)
         // ─────────────────────────────────────────────────────────────────────
 

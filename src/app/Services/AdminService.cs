@@ -256,6 +256,52 @@ namespace LeaderboardApp.Services
         }
 
         // ────────────────────────────────────────────────────
+        //  GitHub handle management (admin-only; always available)
+        // ────────────────────────────────────────────────────
+
+        public async Task SetParticipantGitHubHandleAsync(Guid participantId, string? newHandle)
+        {
+            var participant = await _context.Participants
+                .Include(p => p.Team)
+                .FirstOrDefaultAsync(p => p.Participantid == participantId)
+                ?? throw new InvalidOperationException($"Participant {participantId} not found.");
+
+            // Normalise empty strings to null for consistency
+            newHandle = string.IsNullOrWhiteSpace(newHandle) ? null : newHandle.Trim();
+
+            var oldHandle = participant.Githubhandle;
+            var teamSlug = participant.Team?.GitHubSlug;
+
+            participant.Githubhandle = newHandle;
+            await _context.SaveChangesAsync();
+
+            // Sync GitHub team membership when the participant belongs to a team with a slug
+            if (!string.IsNullOrWhiteSpace(teamSlug))
+            {
+                if (!string.IsNullOrWhiteSpace(newHandle))
+                {
+                    // Remove the old handle from the team (handle change case)
+                    if (!string.IsNullOrWhiteSpace(oldHandle) && oldHandle != newHandle)
+                    {
+                        await _githubService.RemoveUserFromTeamAsync(teamSlug, oldHandle);
+                    }
+
+                    // Add the new handle to the team
+                    await _githubService.MoveUserToTeamAsync(newHandle, null, teamSlug);
+                }
+                else if (!string.IsNullOrWhiteSpace(oldHandle))
+                {
+                    // Handle cleared — remove the old GitHub user from the team
+                    await _githubService.RemoveUserFromTeamAsync(teamSlug, oldHandle);
+                }
+            }
+
+            _logger.LogInformation(
+                "Admin set GitHub handle for participant {ParticipantId} ({Email}): '{OldHandle}' → '{NewHandle}'",
+                participantId, participant.Email, oldHandle ?? "(none)", newHandle ?? "(none)");
+        }
+
+        // ────────────────────────────────────────────────────
         //  GitHub sync (read-only; always available)
         // ────────────────────────────────────────────────────
 

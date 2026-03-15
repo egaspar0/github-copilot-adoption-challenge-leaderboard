@@ -642,6 +642,161 @@ namespace LeaderboardApp.Services
             }
         }
 
+        /// <summary>
+        /// Attempts to resolve the GitHub login for a user by querying the SCIM external identities API.
+        /// Tries Entra Object ID (<paramref name="entraOid"/>) first, then UPN (<paramref name="upn"/>) as fallback.
+        /// Uses the GitHub GraphQL <c>externalIdentities</c> API (GHEC + SAML) to resolve the
+        /// GitHub login for an Entra-authenticated user, filtering by <c>userName</c> (the SAML NameID,
+        /// which Azure AD sends as the user's UPN / email address).
+        /// Returns <c>null</c> when no match is found or GitHub integration is disabled.
+        /// </summary>
+        public async Task<string?> LookupGitHubLoginByScimAsync(string? entraOid, string? upn)
+        {
+            if (IsDisabled()) return null;
+
+            var org = _configuration["GitHubSettings:Org"];
+            if (string.IsNullOrWhiteSpace(org))
+            {
+                _logger.LogWarning("GitHub handle lookup skipped: GitHub organisation is not configured.");
+                return null;
+            }
+
+            // GitHub's externalIdentities GraphQL connection only supports `login` and `userName` filters.
+            // For Azure AD SAML, the NameID is the UPN (email), so we use that as userName.
+            if (string.IsNullOrWhiteSpace(upn))
+            {
+                _logger.LogWarning("GitHub handle lookup skipped: UPN/email claim is null or empty.");
+                return null;
+            }
+
+            var login = await TryGraphQLExternalIdentityAsync(org, upn);
+            if (!string.IsNullOrEmpty(login))
+            {
+                _logger.LogInformation(
+                    "Resolved GitHub login '{Login}' via GraphQL externalIdentities for UPN={Upn}.", login, upn);
+                return login;
+            }
+
+            _logger.LogInformation(
+                "GitHub handle lookup: no login resolved for UPN={Upn}. " +
+                "The user may not have authorised their GitHub account via SAML SSO yet.",
+                upn);
+            return null;
+        }
+
+        /// <summary>
+        /// Queries <c>organization.samlIdentityProvider.externalIdentities(userName: ...)</c> via GraphQL
+        /// and returns the linked GitHub user's login, or <c>null</c> if not found / not yet linked.
+        /// </summary>
+        private async Task<string?> TryGraphQLExternalIdentityAsync(string org, string userName)
+        {
+            const string query = """
+                query ($org: String!, $userName: String!) {
+                  organization(login: $org) {
+                    samlIdentityProvider {
+                      externalIdentities(first: 1, userName: $userName) {
+                        nodes {
+                          user {
+                            login
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
+
+            var payload = JsonSerializer.Serialize(new
+            {
+                query,
+                variables = new { org, userName }
+            });
+
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.github.com/graphql")
+                {
+                    Content = new StringContent(payload, Encoding.UTF8, "application/json")
+                };
+
+                var response = await _httpClient.SendAsync(request);
+                var json = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(
+                        "GraphQL externalIdentities (userName={UserName}) returned HTTP {Status}. Body: {Body}",
+                        userName, response.StatusCode, json);
+                    return null;
+                }
+
+                using var doc = JsonDocument.Parse(json);
+
+                if (doc.RootElement.TryGetProperty("errors", out var errorsEl) &&
+                    errorsEl.GetArrayLength() > 0)
+                {
+                    _logger.LogWarning(
+                        "GraphQL externalIdentities (userName={UserName}) returned errors: {Errors}",
+                        userName, errorsEl.ToString());
+                    return null;
+                }
+
+                // data → organization → samlIdentityProvider → externalIdentities → nodes[0] → user → login
+                if (!doc.RootElement.TryGetProperty("data", out var data)) return null;
+                if (!data.TryGetProperty("organization", out var orgEl) ||
+                    orgEl.ValueKind == JsonValueKind.Null) return null;
+                if (!orgEl.TryGetProperty("samlIdentityProvider", out var idpEl) ||
+                    idpEl.ValueKind == JsonValueKind.Null) return null;
+                if (!idpEl.TryGetProperty("externalIdentities", out var extIds)) return null;
+                if (!extIds.TryGetProperty("nodes", out var nodes) ||
+                    nodes.GetArrayLength() == 0) return null;
+
+                var node = nodes[0];
+                if (!node.TryGetProperty("user", out var userEl) ||
+                    userEl.ValueKind == JsonValueKind.Null)
+                {
+                    _logger.LogDebug(
+                        "GraphQL: SAML identity found for userName={UserName} but user is null " +
+                        "(they have not authorised their GitHub account via SAML SSO).", userName);
+                    return null;
+                }
+
+                if (!userEl.TryGetProperty("login", out var loginEl)) return null;
+
+                return loginEl.GetString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "GraphQL externalIdentities query failed (userName={UserName}).", userName);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> when <paramref name="githubLogin"/> is a confirmed member of the configured org (HTTP 204).
+        /// Always returns <c>true</c> when GitHub integration is disabled so that callers are not blocked in dev/test.
+        /// </summary>
+        public async Task<bool> IsOrgMemberAsync(string githubLogin)
+        {
+            if (IsDisabled()) return true; // treat as valid to avoid blocking flows when integration is off
+
+            var org = _configuration["GitHubSettings:Org"];
+            if (string.IsNullOrWhiteSpace(org)) return false;
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"{GHApiURLPrefix}/{org}/members/{githubLogin}");
+                // 204 = confirmed member; 302/404 = pending invite or not a member
+                return response.StatusCode == System.Net.HttpStatusCode.NoContent;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking org membership for '{Login}'.", githubLogin);
+                return false;
+            }
+        }
+
         // Placeholder for GitHubActivityResponse used above (if not already defined elsewhere)
         private class GitHubActivityResponse
         {

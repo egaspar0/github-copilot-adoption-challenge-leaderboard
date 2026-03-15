@@ -109,7 +109,7 @@
                         {
                             var template = individualActivityTemplates[rand.Next(individualActivityTemplates.Length)];
                             <li class="list-group-item" style="font-size: 1.2rem;">
-                                @Html.Raw(string.Format(template, score.Nickname, score.Score.ToString("F0"), score.ActivityName))
+                                @Html.Raw(string.Format(template, Html.Encode(score.Nickname), score.Score.ToString("F0"), score.ActivityName))
                                 <span class="text-muted float-end">@score.Timestamp?.ToLocalTime().ToString("t")</span>
                             </li>
                         }

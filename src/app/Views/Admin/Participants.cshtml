@@ -46,7 +46,7 @@
                         <th>Name</th>
                         <th>Nickname</th>
                         <th>Email</th>
-                        <th>GitHub Handle</th>
+                        <th style="min-width:200px;">GitHub Handle</th>
                         <th>Current Team</th>
                         <th style="min-width:260px;">Move to Team</th>
                         <th>Actions</th>
@@ -59,15 +59,32 @@
                             <td>@p.FullName</td>
                             <td>@p.Nickname</td>
                             <td>@p.Email</td>
-                            <td>
-                                @if (!string.IsNullOrWhiteSpace(p.GitHubHandle))
-                                {
-                                    <a href="https://github.com/@p.GitHubHandle" target="_blank">@p.GitHubHandle</a>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
+                            <td style="min-width:200px;">
+                                <form method="post" action="@Url.Action("SetGitHubHandle", "Admin")" style="display:flex; gap:4px; align-items:center;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="participantId" value="@p.ParticipantId" />
+                                    <input type="text"
+                                           name="githubHandle"
+                                           value="@p.GitHubHandle"
+                                           class="form-control input-sm"
+                                           placeholder="github-handle"
+                                           style="flex:1; min-width:110px;" />
+                                    <button type="submit"
+                                            class="btn btn-default btn-sm"
+                                            title="Save GitHub handle">
+                                        <span class="glyphicon glyphicon-floppy-disk"></span>
+                                    </button>
+                                    @if (!string.IsNullOrWhiteSpace(p.GitHubHandle))
+                                    {
+                                        <a href="https://github.com/@p.GitHubHandle"
+                                           target="_blank"
+                                           class="btn btn-link btn-sm"
+                                           title="View on GitHub"
+                                           style="padding:2px 4px;">
+                                            <span class="glyphicon glyphicon-new-window"></span>
+                                        </a>
+                                    }
+                                </form>
                             </td>
                             <td>
                                 @if (!string.IsNullOrWhiteSpace(p.TeamName))
@@ -110,7 +127,7 @@
                                             class="btn btn-warning btn-xs"
                                             @(Model.IsLocked ? "disabled" : "")
                                             title="Remove from team (keep participant)"
-                                            onclick="return confirm('Unassign @Html.Raw(p.FullName.Replace("'", "\\'")) from their team?');">
+                                            onclick="return confirm('Unassign @Html.Encode(p.FullName.Replace("'", "\\'")) from their team?');">
                                         <span class="glyphicon glyphicon-remove-circle"></span> Unassign
                                     </button>
                                 </form>
@@ -123,7 +140,7 @@
                                             class="btn btn-danger btn-xs"
                                             @(Model.IsLocked ? "disabled" : "")
                                             title="Permanently delete this participant"
-                                            onclick="return confirm('PERMANENTLY delete @Html.Raw(p.FullName.Replace("'", "\\'"))? This cannot be undone.');">
+                                            onclick="return confirm('PERMANENTLY delete @Html.Encode(p.FullName.Replace("'", "\\'"))? This cannot be undone.');">
                                         <span class="glyphicon glyphicon-trash"></span> Delete
                                     </button>
                                 </form>

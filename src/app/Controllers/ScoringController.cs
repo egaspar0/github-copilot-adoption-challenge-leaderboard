@@ -1,5 +1,6 @@
 ﻿using LeaderboardApp.DTOs;
 using LeaderboardApp.Models;
+using LeaderboardApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
@@ -10,15 +11,19 @@ namespace LeaderboardApp.Controllers
     public class ScoringController : Controller
     {
         private readonly GhcacDbContext _context;
+        private readonly IAdminService _adminService;
 
-        public ScoringController(GhcacDbContext context)
+        public ScoringController(GhcacDbContext context, IAdminService adminService)
         {
             _context = context;
+            _adminService = adminService;
         }
 
         // GET: /Scoring/ParticipantScores
         public async Task<IActionResult> ParticipantScores()
         {
+            if (!_adminService.IsAdminUser())
+                return RedirectToAction("Index", "Home");
             var scores = await _context.Participants
                                        .Include(p => p.Team)
                                        .Select(p => new ParticipantScoreDetailDto
@@ -37,8 +42,13 @@ namespace LeaderboardApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddScore(ParticipantScoreInputModel inputModel, string? returnUrl = null)
         {
+            // Only admins may award points via this endpoint
+            if (!_adminService.IsAdminUser())
+                return Forbid();
+
             // Retrieve the activity to determine the weight and type
             var activity = await _context.Activities.FindAsync(inputModel.ActivityId);
             if (activity == null)
