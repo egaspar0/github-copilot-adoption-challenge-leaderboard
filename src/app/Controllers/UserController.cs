@@ -188,10 +188,7 @@ namespace LeaderboardApp.Controllers
                 }
 
                 var challengeStarted = _configuration.GetValue<bool>("ChallengeSettings:ChallengeStarted");
-                if (challengeStarted)
-                {
-                    return BadRequest(new { message = "The challenge has started. You cannot edit your profile." });
-                }
+                var teamReorgLocked = _configuration.GetValue<bool>("ChallengeSettings:TeamReorgLocked");
 
                 if (!ModelState.IsValid)
                 {
@@ -260,7 +257,7 @@ namespace LeaderboardApp.Controllers
                 var newTeamId = model.Teamid;
 
                 // Check if user is trying to join a team that's already at capacity
-                if (newTeamId != oldTeamId && newTeamId.HasValue)
+                if (!teamReorgLocked && newTeamId != oldTeamId && newTeamId.HasValue)
                 {
                     var maxParticipants = _configuration.GetValue<int>("ChallengeSettings:MaxParticipantsPerTeam");
                     var currentTeamSize = await _context.Participants
@@ -273,15 +270,21 @@ namespace LeaderboardApp.Controllers
                 }
 
                 // Update participant data
-                participant.Firstname = model.Firstname;
-                participant.Lastname = model.Lastname;
-                participant.Nickname = model.Nickname;
-                participant.Githubhandle = newGitHubHandle;
-                participant.Mslearnhandle = model.Mslearnhandle;
-
-                if (!challengeStarted)
+                // First/last/nickname and team: editable until team reorg is locked
+                if (!teamReorgLocked)
                 {
+                    participant.Firstname = model.Firstname;
+                    participant.Lastname = model.Lastname;
+                    participant.Nickname = model.Nickname;
                     participant.Teamid = newTeamId;
+                }
+
+                participant.Githubhandle = newGitHubHandle;
+
+                // MS Learn handle: always editable before challenge starts, or if it hasn't been set yet
+                if (!challengeStarted || string.IsNullOrWhiteSpace(participant.Mslearnhandle))
+                {
+                    participant.Mslearnhandle = model.Mslearnhandle;
                 }
 
                 try
@@ -299,7 +302,7 @@ namespace LeaderboardApp.Controllers
                 string gitHubMessage = "";
 
                 // Handle GitHub handle change (including first-time handle assignment while already on a team)
-                if (newTeamId.HasValue && !string.IsNullOrWhiteSpace(newGitHubHandle) &&
+                if (!teamReorgLocked && newTeamId.HasValue && !string.IsNullOrWhiteSpace(newGitHubHandle) &&
                    (oldGitHubHandle != newGitHubHandle))
                 {
                     try
@@ -327,7 +330,7 @@ namespace LeaderboardApp.Controllers
                 }
 
                 // Move GitHub user to new team if team changed and GitHubHandle exists
-                if (gitHubUpdateSuccess && oldTeamId != newTeamId && newTeamId.HasValue &&
+                if (!teamReorgLocked && gitHubUpdateSuccess && oldTeamId != newTeamId && newTeamId.HasValue &&
                     !string.IsNullOrWhiteSpace(participant.Githubhandle))
                 {
                     try

@@ -11,6 +11,7 @@ namespace LeaderboardApp.ViewModels
         public string Nickname { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string? GitHubHandle { get; set; }
+        public string? MsLearnHandle { get; set; }
         public Guid? TeamId { get; set; }
         public string? TeamName { get; set; }
 
@@ -46,7 +47,20 @@ namespace LeaderboardApp.ViewModels
         /// <summary>GitHub handles found in the DB for this team but NOT present on the GitHub team.</summary>
         public List<string> InDbNotInGitHub { get; set; } = new();
 
-        public bool HasDiscrepancies => InGitHubNotInDb.Any() || InDbNotInGitHub.Any();
+        /// <summary>True = team has Copilot access; False = not granted; null = check failed.</summary>
+        public bool? HasCopilotAccess { get; set; }
+
+        /// <summary>Non-null when the Copilot access check itself errored.</summary>
+        public string? CopilotAccessError { get; set; }
+
+        /// <summary>DB GitHub handles that are NOT members of racwasandbox/copilot-challenge-users.</summary>
+        public List<string> NotInSandboxTeam { get; set; } = new();
+
+        /// <summary>Non-null when the sandbox membership check errored.</summary>
+        public string? SandboxCheckError { get; set; }
+
+        public bool HasDiscrepancies => InGitHubNotInDb.Any() || InDbNotInGitHub.Any()
+            || NotInSandboxTeam.Any() || HasCopilotAccess == false;
 
         /// <summary>Non-null if an error occurred fetching GitHub data for this team.</summary>
         public string? Error { get; set; }

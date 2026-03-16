@@ -77,6 +77,7 @@ namespace LeaderboardApp.Services
                 Nickname = p.Nickname,
                 Email = p.Email,
                 GitHubHandle = p.Githubhandle,
+                MsLearnHandle = p.Mslearnhandle,
                 TeamId = p.Teamid,
                 TeamName = p.Team?.Name
             }).ToList();
@@ -306,6 +307,23 @@ namespace LeaderboardApp.Services
                 participantId, participant.Email, oldHandle ?? "(none)", newHandle ?? "(none)");
         }
 
+        public async Task SetParticipantMsLearnHandleAsync(Guid participantId, string? newHandle)
+        {
+            var participant = await _context.Participants
+                .FirstOrDefaultAsync(p => p.Participantid == participantId)
+                ?? throw new InvalidOperationException($"Participant {participantId} not found.");
+
+            var oldHandle = participant.Mslearnhandle;
+            newHandle = string.IsNullOrWhiteSpace(newHandle) ? null : newHandle.Trim();
+
+            participant.Mslearnhandle = newHandle;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Admin set MS Learn handle for participant {ParticipantId} ({Email}): '{OldHandle}' → '{NewHandle}'",
+                participantId, participant.Email, oldHandle ?? "(none)", newHandle ?? "(none)");
+        }
+
         // ────────────────────────────────────────────────────
         //  GitHub sync (read-only; always available)
         // ────────────────────────────────────────────────────
@@ -316,6 +334,12 @@ namespace LeaderboardApp.Services
                 .Include(t => t.Participants)
                 .Where(t => t.GitHubSlug != null && t.GitHubSlug != string.Empty)
                 .ToListAsync();
+
+            // Fetch sandbox team members once upfront — shared by all team reports
+            var (sandboxLogins, sandboxError) = await _githubService.GetSandboxTeamMembersAsync();
+            var sandboxSet = sandboxLogins != null
+                ? sandboxLogins.ToHashSet(StringComparer.OrdinalIgnoreCase)
+                : null;
 
             var reports = new List<TeamSyncReport>();
 
@@ -356,6 +380,28 @@ namespace LeaderboardApp.Services
                         .Except(githubLogins)
                         .OrderBy(x => x)
                         .ToList();
+
+                    // Copilot access check
+                    var (hasAccess, copilotError) = await _githubService.CheckTeamCopilotAccessAsync(team.GitHubSlug!);
+                    report.HasCopilotAccess = copilotError != null ? null : hasAccess;
+                    report.CopilotAccessError = copilotError;
+
+                    // Sandbox team membership check
+                    if (sandboxError != null)
+                    {
+                        report.SandboxCheckError = sandboxError;
+                    }
+                    else if (sandboxSet != null)
+                    {
+                        report.NotInSandboxTeam = dbHandles
+                            .Where(h => !sandboxSet.Contains(h))
+                            .OrderBy(x => x)
+                            .ToList();
+                    }
+                    else
+                    {
+                        report.SandboxCheckError = "Sandbox team data unavailable.";
+                    }
                 }
                 catch (Exception ex)
                 {

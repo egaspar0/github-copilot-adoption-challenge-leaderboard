@@ -124,8 +124,8 @@ namespace LeaderboardApp.Controllers
                 return Json(new { success = true, message = "Score added successfully." });
             }
 
-            // If a return URL is provided, redirect back to it
-            if (!string.IsNullOrEmpty(returnUrl))
+            // If a return URL is provided, redirect back to it (local only — prevent open redirect)
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
             }

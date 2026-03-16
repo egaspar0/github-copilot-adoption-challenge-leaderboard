@@ -797,6 +797,75 @@ namespace LeaderboardApp.Services
             }
         }
 
+        /// <summary>
+        /// Checks whether a GitHub team has Copilot access enabled via the org's Settings → Copilot → Access page.
+        /// Uses the Copilot metrics endpoint as a proxy: 200 = access granted; 404/other = not granted or indeterminate.
+        /// </summary>
+        public async Task<(bool HasAccess, string? Error)> CheckTeamCopilotAccessAsync(string teamSlug)
+        {
+            var org = _configuration["GitHubSettings:Org"];
+            if (string.IsNullOrWhiteSpace(org))
+                return (false, "GitHubSettings:Org is not configured.");
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"{GHApiURLPrefix}/{org}/teams/{teamSlug}/copilot/metrics");
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    return (true, null);
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    return (false, null);
+                if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    return (false, "Forbidden – Copilot not enabled for this org or PAT lacks 'manage_billing:copilot' scope.");
+                return (false, $"Unexpected response: {(int)response.StatusCode} {response.ReasonPhrase}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking Copilot access for team '{Slug}'.", teamSlug);
+                return (false, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Returns the lowercase GitHub logins of all members in the racwasandbox/copilot-challenge-users team.
+        /// Uses the same PAT as the rest of the GitHub integration.
+        /// </summary>
+        public async Task<(List<string>? Logins, string? Error)> GetSandboxTeamMembersAsync()
+        {
+            const string sandboxOrg = "racwasandbox";
+            const string sandboxTeam = "copilot-challenge-users";
+
+            try
+            {
+                var allLogins = new List<string>();
+                int page = 1;
+                while (true)
+                {
+                    var response = await _httpClient.GetAsync(
+                        $"{GHApiURLPrefix}/{sandboxOrg}/teams/{sandboxTeam}/members?per_page=100&page={page}");
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                        return (null, $"Sandbox team '{sandboxOrg}/{sandboxTeam}' not found – check PAT scope for racwasandbox.");
+                    if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                        return (null, "Forbidden – PAT may not have access to racwasandbox org.");
+
+                    response.EnsureSuccessStatusCode();
+
+                    var members = await response.Content.ReadFromJsonAsync<List<GitHubMember>>();
+                    if (members == null || members.Count == 0) break;
+
+                    allLogins.AddRange(members.Select(m => m.Login.ToLowerInvariant()));
+                    if (members.Count < 100) break;
+                    page++;
+                }
+                return (allLogins, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching sandbox team members.");
+                return (null, ex.Message);
+            }
+        }
+
         // Placeholder for GitHubActivityResponse used above (if not already defined elsewhere)
         private class GitHubActivityResponse
         {

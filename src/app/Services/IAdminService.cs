@@ -48,5 +48,8 @@ namespace LeaderboardApp.Services
         /// This operation is NOT gated by ChallengeStarted — admins can correct handles at any time.
         /// </summary>
         Task SetParticipantGitHubHandleAsync(Guid participantId, string? newHandle);
+
+        /// <summary>Sets or clears the MS Learn handle for a participant (always available, not locked).</summary>
+        Task SetParticipantMsLearnHandleAsync(Guid participantId, string? newHandle);
     }
 }
