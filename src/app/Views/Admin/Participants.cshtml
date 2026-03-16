@@ -47,6 +47,7 @@
                         <th>Nickname</th>
                         <th>Email</th>
                         <th style="min-width:200px;">GitHub Handle</th>
+                        <th style="min-width:200px;">MS Learn Handle</th>
                         <th>Current Team</th>
                         <th style="min-width:260px;">Move to Team</th>
                         <th>Actions</th>
@@ -80,6 +81,33 @@
                                            target="_blank"
                                            class="btn btn-link btn-sm"
                                            title="View on GitHub"
+                                           style="padding:2px 4px;">
+                                            <span class="glyphicon glyphicon-new-window"></span>
+                                        </a>
+                                    }
+                                </form>
+                            </td>
+                            <td style="min-width:200px;">
+                                <form method="post" action="@Url.Action("SetMsLearnHandle", "Admin")" style="display:flex; gap:4px; align-items:center;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="participantId" value="@p.ParticipantId" />
+                                    <input type="text"
+                                           name="msLearnHandle"
+                                           value="@p.MsLearnHandle"
+                                           class="form-control input-sm"
+                                           placeholder="learn-handle"
+                                           style="flex:1; min-width:110px;" />
+                                    <button type="submit"
+                                            class="btn btn-default btn-sm"
+                                            title="Save MS Learn handle">
+                                        <span class="glyphicon glyphicon-floppy-disk"></span>
+                                    </button>
+                                    @if (!string.IsNullOrWhiteSpace(p.MsLearnHandle))
+                                    {
+                                        <a href="https://learn.microsoft.com/en-us/users/@p.MsLearnHandle"
+                                           target="_blank"
+                                           class="btn btn-link btn-sm"
+                                           title="View on MS Learn"
                                            style="padding:2px 4px;">
                                             <span class="glyphicon glyphicon-new-window"></span>
                                         </a>
@@ -149,7 +177,7 @@
                     }
                     @if (!Model.Participants.Any())
                     {
-                        <tr><td colspan="7" class="text-center text-muted">No participants found.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted">No participants found.</td></tr>
                     }
                 </tbody>
             </table>

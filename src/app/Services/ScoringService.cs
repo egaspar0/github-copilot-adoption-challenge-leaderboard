@@ -110,15 +110,6 @@ namespace LeaderboardApp.Services
 
                 var activities = _context.Activities.ToList();
 
-                // Count team members so user-rate metrics can be normalised (rate = active / total).
-                // This ensures 5-person and 6-person teams are judged on adoption rate, not headcount.
-                var teamMemberCount = await _context.Participants
-                    .Where(p => p.Teamid == team.Teamid)
-                    .CountAsync();
-
-                // Clamp to minimum of 1 to avoid divide-by-zero on edge cases.
-                if (teamMemberCount < 1) teamMemberCount = 1;
-
                 var participant = await _context.Participants
                     .Where(p => p.Teamid == team.Teamid)
                     .FirstOrDefaultAsync();
@@ -207,10 +198,8 @@ namespace LeaderboardApp.Services
                         }
                     }
 
-                    // Normalise by team size so adoption rate is compared fairly across 5- and 6-person teams.
-                    // Example: 4 active out of 5 = 0.80; 4 active out of 6 = 0.67 — rewards higher adoption rate.
-                    AddScore("ActiveUsersPerDay", metric.Date, teamMemberCount > 0 ? (decimal)metric.TotalActiveUsers / teamMemberCount : metric.TotalActiveUsers);
-                    AddScore("EngagedUsersPerDay", metric.Date, teamMemberCount > 0 ? (decimal)metric.TotalEngagedUsers / teamMemberCount : metric.TotalEngagedUsers);
+                    AddScore("ActiveUsersPerDay", metric.Date, metric.TotalActiveUsers);
+                    AddScore("EngagedUsersPerDay", metric.Date, metric.TotalEngagedUsers);
                 }
 
                 if (scoreEntries.Count == 0)

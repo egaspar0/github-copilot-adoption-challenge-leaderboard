@@ -282,6 +282,32 @@ namespace LeaderboardApp.Controllers
         }
 
         // ─────────────────────────────────────────────────────────────────────
+        //  MS Learn handle (always available - not gated by ChallengeStarted)
+        // ─────────────────────────────────────────────────────────────────────
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetMsLearnHandle(Guid participantId, string? msLearnHandle)
+        {
+            if (RequireAdmin() is { } forbidden) return forbidden;
+
+            try
+            {
+                await _adminService.SetParticipantMsLearnHandleAsync(participantId, msLearnHandle);
+                TempData["Success"] = string.IsNullOrWhiteSpace(msLearnHandle)
+                    ? "MS Learn handle cleared."
+                    : $"MS Learn handle set to '{msLearnHandle.Trim()}'";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting MS Learn handle for participant {ParticipantId}", participantId);
+                TempData["Error"] = $"Failed to update MS Learn handle: {ex.Message}";
+            }
+
+            return RedirectToAction("Participants");
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
         //  Sync (always available - read-only comparison)
         // ─────────────────────────────────────────────────────────────────────
 

@@ -17,7 +17,7 @@
         <div class="form-group">
             <label for="Firstname" class="control-label col-md-2">First Name</label>
             <div class="col-md-10">
-                <input asp-for="Firstname" class="form-control" id="Firstname" value="@Model.Firstname" @(ViewBag.ChallengeStarted ? "disabled" : "") />
+                <input asp-for="Firstname" class="form-control" id="Firstname" value="@Model.Firstname" @(ViewBag.TeamReorgLocked ? "disabled" : "") />
                 <span asp-validation-for="Firstname" class="text-danger"></span>
             </div>
         </div>
@@ -25,7 +25,7 @@
         <div class="form-group">
             <label for="Lastname" class="control-label col-md-2">Last Name</label>
             <div class="col-md-10">
-                <input asp-for="Lastname" class="form-control" id="Lastname" value="@Model.Lastname" @(ViewBag.ChallengeStarted ? "disabled" : "") />
+                <input asp-for="Lastname" class="form-control" id="Lastname" value="@Model.Lastname" @(ViewBag.TeamReorgLocked ? "disabled" : "") />
                 <span asp-validation-for="Lastname" class="text-danger"></span>
             </div>
         </div>
@@ -33,7 +33,7 @@
         <div class="form-group">
             <label for="Nickname" class="control-label col-md-2">Nickname</label>
             <div class="col-md-10">
-                <input asp-for="Nickname" class="form-control" id="Nickname" value="@Model.Nickname" @(ViewBag.ChallengeStarted ? "disabled" : "") />
+                <input asp-for="Nickname" class="form-control" id="Nickname" value="@Model.Nickname" @(ViewBag.TeamReorgLocked ? "disabled" : "") />
                 <span asp-validation-for="Nickname" class="text-danger"></span>
             </div>
         </div>
@@ -72,7 +72,7 @@
         <div class="form-group">
             <label for="Mslearnhandle" class="control-label col-md-2">MS Learn Handle</label>
             <div class="col-md-10">
-                <input asp-for="Mslearnhandle" class="form-control" id="Mslearnhandle" value="@Model.Mslearnhandle" @(ViewBag.ChallengeStarted ? "disabled" : "") />
+                <input asp-for="Mslearnhandle" class="form-control" id="Mslearnhandle" value="@Model.Mslearnhandle" @(ViewBag.ChallengeStarted && !string.IsNullOrEmpty(Model.Mslearnhandle) ? "disabled" : "") />
                 <span asp-validation-for="Mslearnhandle" class="text-danger"></span>
                 <!-- Collapsible help section -->
                 <a href="#learnHandleHelp" class="btn btn-link" data-toggle="collapse" aria-expanded="false" aria-controls="learnHandleHelp" id="learnHandleHelpToggle" style="padding-left:0;">
@@ -134,7 +134,7 @@
         <!-- Save Changes Button -->
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <button type="button" id="saveProfileBtn" class="btn btn-primary" @(ViewBag.ChallengeStarted ? "disabled" : "")>Save Changes</button>
+                <button type="button" id="saveProfileBtn" class="btn btn-primary" @(ViewBag.TeamReorgLocked && ViewBag.ChallengeStarted && !string.IsNullOrEmpty(Model.Mslearnhandle) ? "disabled" : "")>Save Changes</button>
             </div>
         </div>
     </form>
@@ -148,6 +148,7 @@
         $(document).ready(function () {
             // FIX: Convert Razor boolean to JavaScript boolean
             var challengeStarted = @((bool)ViewBag.ChallengeStarted ? "true" : "false");
+            var teamReorgLocked = @((bool)ViewBag.TeamReorgLocked ? "true" : "false");
 
             // Toggle caret rotation for collapsible help
             $('#learnHandleHelp').on('shown.bs.collapse', function () {
@@ -180,8 +181,8 @@
 
             // Save Profile Button Click Handler
             $('#saveProfileBtn').click(function () {
-                if (challengeStarted) {
-                    alert("The challenge has started. You cannot edit your profile.");
+                if (teamReorgLocked && challengeStarted && $('#Mslearnhandle').prop('disabled')) {
+                    alert("Profile editing is locked.");
                     return;
                 }
 

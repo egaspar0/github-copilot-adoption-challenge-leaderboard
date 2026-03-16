@@ -95,72 +95,124 @@
                             <strong>Failed to fetch GitHub data:</strong> @report.Error
                         </div>
                     }
-                    else if (!report.HasDiscrepancies)
-                    {
-                        <p class="text-success mb-0">
-                            <span class="glyphicon glyphicon-ok-circle"></span>
-                            GitHub team membership matches the database exactly.
-                        </p>
-                    }
                     else
                     {
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5 class="text-danger">
-                                    <span class="glyphicon glyphicon-arrow-right"></span>
-                                    In GitHub but <strong>not</strong> in DB (@report.InGitHubNotInDb.Count)
-                                </h5>
-                                @if (report.InGitHubNotInDb.Any())
-                                {
-                                    <p class="text-muted" style="font-size:12px;">
-                                        These GitHub users are on the GitHub team but have no matching
-                                        <code>Githubhandle</code> in the database for this team.
-                                        Consider adding them to the DB or removing them from GitHub.
-                                    </p>
-                                    <ul class="list-group">
-                                        @foreach (var handle in report.InGitHubNotInDb)
-                                        {
-                                            <li class="list-group-item list-group-item-danger">
-                                                <a href="https://github.com/@handle" target="_blank">
-                                                    <span class="glyphicon glyphicon-user"></span> @handle
-                                                </a>
-                                            </li>
-                                        }
-                                    </ul>
-                                }
-                                else
-                                {
-                                    <p class="text-muted"><em>None</em></p>
-                                }
+                        <!-- Section 1: Team membership diff -->
+                        <h5><span class="glyphicon glyphicon-transfer"></span> <strong>Team Membership</strong></h5>
+                        @if (!report.InGitHubNotInDb.Any() && !report.InDbNotInGitHub.Any())
+                        {
+                            <p class="text-success"><span class="glyphicon glyphicon-ok-circle"></span> GitHub team membership matches the database exactly.</p>
+                        }
+                        else
+                        {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-danger">
+                                        <span class="glyphicon glyphicon-arrow-right"></span>
+                                        In GitHub but <strong>not</strong> in DB (@report.InGitHubNotInDb.Count)
+                                    </h6>
+                                    @if (report.InGitHubNotInDb.Any())
+                                    {
+                                        <p class="text-muted" style="font-size:12px;">On the GitHub team but no matching <code>Githubhandle</code> in DB for this team.</p>
+                                        <ul class="list-group">
+                                            @foreach (var handle in report.InGitHubNotInDb)
+                                            {
+                                                <li class="list-group-item list-group-item-danger">
+                                                    <a href="https://github.com/@handle" target="_blank">
+                                                        <span class="glyphicon glyphicon-user"></span> @handle
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else { <p class="text-muted"><em>None</em></p> }
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-warning">
+                                        <span class="glyphicon glyphicon-arrow-left"></span>
+                                        In DB but <strong>not</strong> on GitHub (@report.InDbNotInGitHub.Count)
+                                    </h6>
+                                    @if (report.InDbNotInGitHub.Any())
+                                    {
+                                        <p class="text-muted" style="font-size:12px;">Assigned in DB but missing from the GitHub team.</p>
+                                        <ul class="list-group">
+                                            @foreach (var handle in report.InDbNotInGitHub)
+                                            {
+                                                <li class="list-group-item list-group-item-warning">
+                                                    <a href="https://github.com/@handle" target="_blank">
+                                                        <span class="glyphicon glyphicon-user"></span> @handle
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else { <p class="text-muted"><em>None</em></p> }
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <h5 class="text-warning">
-                                    <span class="glyphicon glyphicon-arrow-left"></span>
-                                    In DB but <strong>not</strong> on GitHub (@report.InDbNotInGitHub.Count)
-                                </h5>
-                                @if (report.InDbNotInGitHub.Any())
-                                {
-                                    <p class="text-muted" style="font-size:12px;">
-                                        These participants are assigned to this team in the database but are
-                                        missing from the GitHub team. Consider adding them to GitHub.
-                                    </p>
-                                    <ul class="list-group">
-                                        @foreach (var handle in report.InDbNotInGitHub)
-                                        {
-                                            <li class="list-group-item list-group-item-warning">
-                                                <a href="https://github.com/@handle" target="_blank">
-                                                    <span class="glyphicon glyphicon-user"></span> @handle
-                                                </a>
-                                            </li>
-                                        }
-                                    </ul>
-                                }
-                                else
-                                {
-                                    <p class="text-muted"><em>None</em></p>
-                                }
+                        }
+
+                        <hr style="margin: 10px 0;" />
+
+                        <!-- Section 2: Copilot access -->
+                        <h5><span class="glyphicon glyphicon-lock"></span> <strong>Copilot Access</strong></h5>
+                        @if (report.CopilotAccessError != null)
+                        {
+                            <div class="alert alert-warning" style="padding:8px 12px;">
+                                <span class="glyphicon glyphicon-warning-sign"></span>
+                                <strong>Check failed:</strong> @report.CopilotAccessError
                             </div>
-                        </div>
+                        }
+                        else if (report.HasCopilotAccess == true)
+                        {
+                            <p class="text-success"><span class="glyphicon glyphicon-ok-circle"></span> Team has Copilot access assigned.</p>
+                        }
+                        else if (report.HasCopilotAccess == false)
+                        {
+                            <div class="alert alert-danger" style="padding:8px 12px;">
+                                <span class="glyphicon glyphicon-remove-circle"></span>
+                                <strong>No Copilot access detected.</strong>
+                                Go to <em>Org Settings → Copilot → Access</em> and grant access to this team.
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted"><em>Status unknown.</em></p>
+                        }
+
+                        <hr style="margin: 10px 0;" />
+
+                        <!-- Section 3: Sandbox team membership -->
+                        <h5><span class="glyphicon glyphicon-globe"></span> <strong>Sandbox Team (racwasandbox/copilot-challenge-users)</strong></h5>
+                        @if (report.SandboxCheckError != null)
+                        {
+                            <div class="alert alert-warning" style="padding:8px 12px;">
+                                <span class="glyphicon glyphicon-warning-sign"></span>
+                                <strong>Check failed:</strong> @report.SandboxCheckError
+                            </div>
+                        }
+                        else if (!report.NotInSandboxTeam.Any())
+                        {
+                            <p class="text-success"><span class="glyphicon glyphicon-ok-circle"></span> All team members are in the sandbox org team.</p>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning" style="padding:8px 12px; margin-bottom:8px;">
+                                <span class="glyphicon glyphicon-warning-sign"></span>
+                                <strong>@report.NotInSandboxTeam.Count member(s) not in sandbox team.</strong>
+                                These participants won't have access to advanced Copilot features via racwasandbox.
+                                Add them to <strong>racwasandbox/copilot-challenge-users</strong>.
+                            </div>
+                            <ul class="list-group">
+                                @foreach (var handle in report.NotInSandboxTeam)
+                                {
+                                    <li class="list-group-item list-group-item-warning">
+                                        <a href="https://github.com/@handle" target="_blank">
+                                            <span class="glyphicon glyphicon-user"></span> @handle
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
                     }
                 </div>
             </div>
