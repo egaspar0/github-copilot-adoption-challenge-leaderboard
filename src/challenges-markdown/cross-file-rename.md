@@ -39,17 +39,17 @@ Ensure Copilot Chat is enabled in **your IDE** for example VS Code JetBrains or 
 
 ### Checkpoint
 
-1. Did Copilot list every file requiring a rename
+1. Did Copilot list every file requiring a rename?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the project build or all tests pass after the rename
+2. Did the project build or all tests pass after the rename?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you commit the refactor with a descriptive message
+3. Did you commit the refactor with a descriptive message?
 
 - [ ] Yes
 - [ ] No

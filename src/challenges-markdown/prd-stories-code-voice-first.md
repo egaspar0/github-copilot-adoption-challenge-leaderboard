@@ -45,17 +45,17 @@ Install the [VS Code Speech](https://marketplace.visualstudio.com/items?itemName
 
 ### Checkpoint
 
-1. Did Copilot generate epics user stories and acceptance criteria from the PRD
+1. Did Copilot generate epics user stories and acceptance criteria from the PRD?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the Gherkin spec file save under `tests/features`
+2. Did the Gherkin spec file save under `tests/features`?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you commit and push the scaffold branch and open a pull request
+3. Did you commit and push the scaffold branch and open a pull request?
 
 - [ ] Yes
 - [ ] No

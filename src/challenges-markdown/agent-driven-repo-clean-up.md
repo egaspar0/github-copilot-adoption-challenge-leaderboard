@@ -39,17 +39,17 @@ Install the latest **GitHub Copilot** extension in VS Code and enable Agent mode
 
 ### Checkpoint
 
-1. Did the Agent open a pull request that deleted only dead code
+1. Did the Agent open a pull request that deleted only dead code?
 
 - [ ] Yes
 - [ ] No
 
-2. Did all tests pass after the clean up
+2. Did all tests pass after the clean up?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you merge the pull request and delete the clean up branch
+3. Did you merge the pull request and delete the clean up branch?
 
 - [ ] Yes
 - [ ] No

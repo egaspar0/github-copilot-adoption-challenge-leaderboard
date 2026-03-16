@@ -38,17 +38,17 @@ Ensure you are running VS Code with the latest GitHub Copilot Chat extension. Ag
 
 ### Checkpoint
 
-1. Did the primary agent spawn a subagent that appeared as a collapsed node in the Chat panel
+1. Did the primary agent spawn a subagent that appeared as a collapsed node in the Chat panel?
 
 - [ ] Yes
 - [ ] No
 
-2. Were you able to expand and inspect the subagent tool calls and returned summary
+2. Were you able to expand and inspect the subagent tool calls and returned summary?
 
 - [ ] Yes
 - [ ] No
 
-3. Did the custom agent file work as a reusable subagent when invoked with the at-mention
+3. Did the custom agent file work as a reusable subagent when invoked with the at-mention?
 
 - [ ] Yes
 - [ ] No

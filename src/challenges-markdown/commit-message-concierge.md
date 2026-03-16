@@ -45,17 +45,17 @@ Confirm that GitHub Copilot is enabled in **your IDE** for example VS Code JetBr
 
 ### Checkpoint
 
-1. Did Copilot generate a commit message automatically from your staged changes
+1. Did Copilot generate a commit message automatically from your staged changes?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you add additional detail such as a ticket reference or rationale
+2. Did you add additional detail such as a ticket reference or rationale?
 
 - [ ] Yes
 - [ ] No
 
-3. Did the commit push successfully to the remote repository
+3. Did the commit push successfully to the remote repository?
 
 - [ ] Yes
 - [ ] No

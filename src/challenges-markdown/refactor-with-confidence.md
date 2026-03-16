@@ -39,17 +39,17 @@ Ensure Copilot Chat is enabled in **your IDE** such as VS Code JetBrains or Visu
 
 ### Checkpoint
 
-1. Did Copilot create unit tests before performing the refactor
+1. Did Copilot create unit tests before performing the refactor?
 
 - [ ] Yes
 - [ ] No
 
-2. Did all tests pass after the new helper methods were added
+2. Did all tests pass after the new helper methods were added?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you confirm that the refactored code reads more clearly than before
+3. Did you confirm that the refactored code reads more clearly than before?
 
 - [ ] Yes
 - [ ] No

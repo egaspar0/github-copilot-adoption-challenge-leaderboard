@@ -39,17 +39,17 @@ Copilot coding agent is available with **GitHub Copilot Pro, Pro+, Business, and
 
 ### Checkpoint
 
-1. Did Copilot coding agent create a pull request from the assigned Issue
+1. Did Copilot coding agent create a pull request from the assigned Issue?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the automated branch and pull request compile and pass tests
+2. Did the automated branch and pull request compile and pass tests?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you merge the pull request and close the Issue
+3. Did you merge the pull request and close the Issue?
 
 - [ ] Yes
 - [ ] No

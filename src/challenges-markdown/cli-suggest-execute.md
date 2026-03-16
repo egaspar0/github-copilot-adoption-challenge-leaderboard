@@ -39,17 +39,17 @@ Confirm that the Copilot CLI is installed with `copilot --version`. Authenticate
 
 ### Checkpoint
 
-1. Did Copilot suggest a safe branch cleanup command
+1. Did Copilot suggest a safe branch cleanup command?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the command remove local branches that are already merged
+2. Did the command remove local branches that are already merged?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you confirm the result with `git branch`
+3. Did you confirm the result with `git branch`?
 
 - [ ] Yes
 - [ ] No

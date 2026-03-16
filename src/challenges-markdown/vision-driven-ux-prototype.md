@@ -39,17 +39,17 @@ In this rapid prototyping exercise, you will upload a photo of a hand-drawn or e
 
 ### Checkpoint
 
-1. Did Copilot generate HTML and CSS files in the `prototype/` folder
+1. Did Copilot generate HTML and CSS files in the `prototype/` folder?
 
 - [ ] Yes
 - [ ] No
 
-2. Does the prototype render correctly on both mobile width and desktop width
+2. Does the prototype render correctly on both mobile width and desktop width?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you commit the files on the `vision-prototype` branch
+3. Did you commit the files on the `vision-prototype` branch?
 
 - [ ] Yes
 - [ ] No

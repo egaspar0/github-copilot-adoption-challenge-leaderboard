@@ -37,17 +37,17 @@ Confirm Copilot Chat is enabled in **your IDE** such as VS Code or JetBrains. En
 
 ### Checkpoint
 
-1. Did Copilot replace every hard coded string with a `t()` call
+1. Did Copilot replace every hard coded string with a `t()` call?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the generated `en.json` include keys for each wrapped string
+2. Did the generated `en.json` include keys for each wrapped string?
 
 - [ ] Yes
 - [ ] No
 
-3. Did the application render correctly after the change
+3. Did the application render correctly after the change?
 
 - [ ] Yes
 - [ ] No

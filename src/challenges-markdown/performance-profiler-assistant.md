@@ -39,17 +39,17 @@ Confirm Copilot Chat is enabled in **your IDE** such as VS Code JetBrains or Vis
 
 ### Checkpoint
 
-1. Did Copilot add profiler instrumentation without syntax errors
+1. Did Copilot add profiler instrumentation without syntax errors?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the optimised method run faster than the original benchmark
+2. Did the optimised method run faster than the original benchmark?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you commit the profiler code removal or keep a clean final version
+3. Did you commit the profiler code removal or keep a clean final version?
 
 - [ ] Yes
 - [ ] No

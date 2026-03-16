@@ -36,17 +36,17 @@ Ensure you have **Python 3.11 or later** and **uv** installed. You also need **G
 
 ### Checkpoint
 
-1. Did the specify init command create a .specs directory with the initial structure
+1. Did the specify init command create a .specs directory with the initial structure?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the /speckit.specify command produce a structured specification with acceptance criteria
+2. Did the /speckit.specify command produce a structured specification with acceptance criteria?
 
 - [ ] Yes
 - [ ] No
 
-3. Did /speckit.implement generate code that matched the planned specification
+3. Did /speckit.implement generate code that matched the planned specification?
 
 - [ ] Yes
 - [ ] No

@@ -37,17 +37,17 @@ Ensure you have **Copilot Enterprise** and Copilot code review is enabled in you
 
 ### Checkpoint
 
-1. Did Copilot provide review comments on your pull request
+1. Did Copilot provide review comments on your pull request?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you respond to or act on at least one AI comment
+2. Did you respond to or act on at least one AI comment?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you merge the pull request after all approvals
+3. Did you merge the pull request after all approvals?
 
 - [ ] Yes
 - [ ] No

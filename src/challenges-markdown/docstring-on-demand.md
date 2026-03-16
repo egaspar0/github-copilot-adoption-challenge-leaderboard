@@ -39,17 +39,17 @@ Make sure GitHub Copilot is active in **your IDE** (VS Code JetBrains Visual Stu
 
 ### Checkpoint
 
-1. Did Copilot generate a docstring without manual typing
+1. Did Copilot generate a docstring without manual typing?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you cycle through more than one suggestion before accepting
+2. Did you cycle through more than one suggestion before accepting?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you edit the generated docstring to better fit your code style
+3. Did you edit the generated docstring to better fit your code style?
 
 - [ ] Yes
 - [ ] No

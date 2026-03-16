@@ -37,17 +37,17 @@ Ensure you have a GitHub repository in **Github Enterprise** where you can open 
 
 ### Checkpoint
 
-1. Did Copilot Explain generate a clear summary without errors
+1. Did Copilot Explain generate a clear summary without errors?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you post the summary as a comment in the pull request conversation
+2. Did you post the summary as a comment in the pull request conversation?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you enhance the summary with extra context before submitting
+3. Did you enhance the summary with extra context before submitting?
 
 - [ ] Yes
 - [ ] No

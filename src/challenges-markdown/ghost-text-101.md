@@ -47,29 +47,17 @@ Run tests or build as usual, then commit with a Copilot-generated commit message
 
 ### Mini-quiz
 
-### Changed from mb-3 to mb-4 for more spacing
-
 1. Did Copilot suggest a complete, runnable function body?
-
-### Added mb-2 for spacing between radio options
 
 - [ ] Yes
 - [ ] No
-
-### Changed from mb-3 to mb-4
 
 2. Did you use the keyboard shortcut to cycle through alternative suggestions?
 
-### Added mb-2
-
 - [ ] Yes
 - [ ] No
 
-### Changed from mb-4 to mb-5 for more spacing before next section
-
 3. Did you repeat the exercise in a second language file and notice any differences?
-
-### Added mb-2
 
 - [ ] Yes
 - [ ] No

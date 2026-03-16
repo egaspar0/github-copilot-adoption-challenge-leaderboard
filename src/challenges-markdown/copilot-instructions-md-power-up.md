@@ -47,17 +47,17 @@ Example: `I use four space indentation and snake_case for functions. All helpers
 
 ### Checkpoint
 
-1. Did you add three clear sentences to `copilot-instructions.md`
+1. Did you add three clear sentences to `copilot-instructions.md`?
 
 - [ ] Yes
 - [ ] No
 
-2. Did Copilot generate a helper utility that follows your specified style
+2. Did Copilot generate a helper utility that follows your specified style?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you commit the new instruction file to the repository
+3. Did you commit the new instruction file to the repository?
 
 - [ ] Yes
 - [ ] No

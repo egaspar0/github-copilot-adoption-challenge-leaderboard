@@ -39,17 +39,17 @@ Ensure GitHub Copilot is active in **your IDE** (VS Code JetBrains Visual Studio
 
 ### Checkpoint
 
-1. Did you complete the task without using the mouse
+1. Did you complete the task without using the mouse?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you cycle through at least one alternative suggestion with the shortcut keys
+2. Did you cycle through at least one alternative suggestion with the shortcut keys?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you record the time taken and compare it to a mouse based workflow
+3. Did you record the time taken and compare it to a mouse based workflow?
 
 - [ ] Yes
 - [ ] No

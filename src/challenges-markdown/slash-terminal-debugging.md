@@ -39,17 +39,17 @@ Confirm Copilot Chat is enabled in **your IDE** such as VS Code, JetBrains, or V
 
 ### Checkpoint
 
-1. Did Copilot correctly explain the reason for the failure
+1. Did Copilot correctly explain the reason for the failure?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you apply the Copilot suggested fix without manual changes
+2. Did you apply the Copilot suggested fix without manual changes?
 
 - [ ] Yes
 - [ ] No
 
-3. Did the script run successfully after the fix
+3. Did the script run successfully after the fix?
 
 - [ ] Yes
 - [ ] No

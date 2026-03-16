@@ -37,17 +37,17 @@ Confirm that Copilot Chat is enabled in **your IDE** (use the Copilot sidebar in
 
 ### Checkpoint
 
-1. Did Copilot Chat provide an explanation that aligned with your understanding of the code
+1. Did Copilot Chat provide an explanation that aligned with your understanding of the code?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you ask for and receive a simpler rewrite
+2. Did you ask for and receive a simpler rewrite?
 
 - [ ] Yes
 - [ ] No
 
-3. Did the rewritten code compile or pass tests after you applied it
+3. Did the rewritten code compile or pass tests after you applied it?
 
 - [ ] Yes
 - [ ] No
