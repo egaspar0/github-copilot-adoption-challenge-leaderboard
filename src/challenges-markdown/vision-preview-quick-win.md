@@ -41,17 +41,17 @@ In this quick win you will use **GitHub Copilot Chat Vision (Preview feature) **
 
 ### Checkpoint
 
-1. Did Copilot identify every main component in your diagram
+1. Did Copilot identify every main component in your diagram?
 
 - [ ] Yes
 - [ ] No
 
-2. Did all generated stubs compile without errors
+2. Did all generated stubs compile without errors?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you commit the stubs in a separate branch for later review
+3. Did you commit the stubs in a separate branch for later review?
 
 - [ ] Yes
 - [ ] No

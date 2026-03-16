@@ -41,17 +41,17 @@ Install the latest **GitHub Copilot** extension in VS Code and enable both Agent
 
 ### Checkpoint
 
-1. Did the Agent highlight the exact visual differences between screenshot and design
+1. Did the Agent highlight the exact visual differences between screenshot and design?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the generated patch compile and render without errors
+2. Did the generated patch compile and render without errors?
 
 - [ ] Yes
 - [ ] No
 
-3. Does the fixed page now match the Figma design when viewed in the browser
+3. Does the fixed page now match the Figma design when viewed in the browser?
 
 - [ ] Yes
 - [ ] No

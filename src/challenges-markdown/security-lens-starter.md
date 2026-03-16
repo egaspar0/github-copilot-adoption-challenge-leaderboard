@@ -39,17 +39,17 @@ Ensure Copilot Chat is enabled in **your IDE** for example VS Code JetBrains or 
 
 ### Checkpoint
 
-1. Did Copilot correctly highlight at least one OWASP risk in your original code
+1. Did Copilot correctly highlight at least one OWASP risk in your original code?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you implement the safer version without breaking existing functionality
+2. Did you implement the safer version without breaking existing functionality?
 
 - [ ] Yes
 - [ ] No
 
-3. Did the new unit test pass confirming the vulnerability is mitigated
+3. Did the new unit test pass confirming the vulnerability is mitigated?
 
 - [ ] Yes
 - [ ] No

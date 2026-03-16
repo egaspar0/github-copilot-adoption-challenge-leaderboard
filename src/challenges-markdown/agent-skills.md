@@ -36,17 +36,17 @@ Ensure you have VS Code with the latest GitHub Copilot Chat extension. Agent mod
 
 ### Checkpoint
 
-1. Did Copilot automatically discover and apply the SKILL.md instructions during a relevant prompt
+1. Did Copilot automatically discover and apply the SKILL.md instructions during a relevant prompt?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the /create-skill command successfully generate a new skill file
+2. Did the /create-skill command successfully generate a new skill file?
 
 - [ ] Yes
 - [ ] No
 
-3. Were you able to organize skills at the repository or user level and verify they activated
+3. Were you able to organize skills at the repository or user level and verify they activated?
 
 - [ ] Yes
 - [ ] No

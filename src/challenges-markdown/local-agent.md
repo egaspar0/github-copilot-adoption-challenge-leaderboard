@@ -37,17 +37,17 @@ Ensure VS Code has the latest GitHub Copilot Chat extension. Enable agent mode i
 
 ### Checkpoint
 
-1. Did you successfully use Ask mode to get a codebase explanation without any file edits
+1. Did you successfully use Ask mode to get a codebase explanation without any file edits?
 
 - [ ] Yes
 - [ ] No
 
-2. Did Plan mode generate a clear implementation plan that you could review before execution
+2. Did Plan mode generate a clear implementation plan that you could review before execution?
 
 - [ ] Yes
 - [ ] No
 
-3. Did Agent mode apply inline diffs and create checkpoints you could inspect and undo
+3. Did Agent mode apply inline diffs and create checkpoints you could inspect and undo?
 
 - [ ] Yes
 - [ ] No

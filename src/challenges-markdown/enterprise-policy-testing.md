@@ -44,17 +44,17 @@ Content exclusions require a **GitHub Copilot Business or Enterprise** plan. You
 
 ### Checkpoint
 
-1. Did you add content exclusion patterns covering your secret files
+1. Did you add content exclusion patterns covering your secret files?
 
 - [ ] Yes
 - [ ] No
 
-2. Does Copilot stop offering suggestions in excluded files
+2. Does Copilot stop offering suggestions in excluded files?
 
 - [ ] Yes
 - [ ] No
 
-3. Does Copilot still work normally on non-excluded files
+3. Does Copilot still work normally on non-excluded files?
 
 - [ ] Yes
 - [ ] No

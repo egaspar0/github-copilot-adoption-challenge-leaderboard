@@ -37,17 +37,17 @@ Install the latest **GitHub Copilot** extension in VS Code and enable Agent mode
 
 ### Checkpoint
 
-1. Did the Agent return a clear description of all six commits
+1. Did the Agent return a clear description of all six commits?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you ask at least one follow up question to clarify a change
+2. Did you ask at least one follow up question to clarify a change?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you save or share the summary with your team
+3. Did you save or share the summary with your team?
 
 - [ ] Yes
 - [ ] No

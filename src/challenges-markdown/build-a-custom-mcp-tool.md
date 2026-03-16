@@ -41,17 +41,17 @@ Install the latest **GitHub Copilot** extension in VS Code and enable Agent mode
 
 ### Checkpoint
 
-1. Did the MCP server start locally and pass the health check
+1. Did the MCP server start locally and pass the health check?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the Agent successfully create a live Jira ticket via the new tool
+2. Did the Agent successfully create a live Jira ticket via the new tool?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you push the custom tool to a branch and open a pull request
+3. Did you push the custom tool to a branch and open a pull request?
 
 - [ ] Yes
 - [ ] No

@@ -36,17 +36,17 @@ Ensure your GitHub organization has **Copilot coding agent** (Cloud Agent) enabl
 
 ### Checkpoint
 
-1. Did the Cloud agent successfully create a remote session and begin working on your prompt
+1. Did the Cloud agent successfully create a remote session and begin working on your prompt?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the cloud agent open a pull request with the implemented changes
+2. Did the cloud agent open a pull request with the implemented changes?
 
 - [ ] Yes
 - [ ] No
 
-3. Were you able to review the diff and verify the changes before merging
+3. Were you able to review the diff and verify the changes before merging?
 
 - [ ] Yes
 - [ ] No

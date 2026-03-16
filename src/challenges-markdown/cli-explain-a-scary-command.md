@@ -39,17 +39,17 @@ Confirm that the GitHub CLI is installed by running `gh --version`. Install the 
 
 ### Checkpoint
 
-1. Did Copilot return an explanation that listed every flag and sub command
+1. Did Copilot return an explanation that listed every flag and sub command?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you confirm the explanation by running the original command yourself
+2. Did you confirm the explanation by running the original command yourself?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you try `gh copilot explain` on at least one more command from your project
+3. Did you try `gh copilot explain` on at least one more command from your project?
 
 - [ ] Yes
 - [ ] No

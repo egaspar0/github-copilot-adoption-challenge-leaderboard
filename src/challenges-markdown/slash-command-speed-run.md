@@ -37,17 +37,17 @@ Ensure GitHub Copilot Chat is enabled in **your IDE** (VS Code JetBrains Visual 
 
 ### Checkpoint
 
-1. Did Copilot create a test file without manual coding
+1. Did Copilot create a test file without manual coding?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the generated tests run successfully in your test framework
+2. Did the generated tests run successfully in your test framework?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you review and adjust any part of the generated tests before committing
+3. Did you review and adjust any part of the generated tests before committing?
 
 - [ ] Yes
 - [ ] No

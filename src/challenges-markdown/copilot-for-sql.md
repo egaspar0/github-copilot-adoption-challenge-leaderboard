@@ -37,17 +37,17 @@ Confirm Copilot is active in **your IDE** such as VS Code or JetBrains. Ensure y
 
 ### Checkpoint
 
-1. Did Copilot produce a syntactically correct SQL query
+1. Did Copilot produce a syntactically correct SQL query?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the query return the expected ten rows sorted by spend
+2. Did the query return the expected ten rows sorted by spend?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you commit the query or save it in the data layer
+3. Did you commit the query or save it in the data layer?
 
 - [ ] Yes
 - [ ] No

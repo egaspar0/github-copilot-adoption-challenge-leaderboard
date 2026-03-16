@@ -39,17 +39,17 @@ Confirm Copilot Chat is active in **your IDE** such as VS Code JetBrains or Visu
 
 ### Checkpoint
 
-1. Did Copilot generate a complete markdown section without manual writing
+1. Did Copilot generate a complete markdown section without manual writing?
 
 - [ ] Yes
 - [ ] No
 
-2. Did you edit the draft to align with project conventions
+2. Did you edit the draft to align with project conventions?
 
 - [ ] Yes
 - [ ] No
 
-3. Did the updated Readme render correctly in preview or on GitHub
+3. Did the updated Readme render correctly in preview or on GitHub?
 
 - [ ] Yes
 - [ ] No

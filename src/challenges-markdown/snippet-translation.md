@@ -39,17 +39,17 @@ Confirm Copilot Chat is active in **your IDE** such as VS Code JetBrains Visual 
 
 ### Checkpoint
 
-1. Did Copilot produce syntactically correct code in the target language
+1. Did Copilot produce syntactically correct code in the target language?
 
 - [ ] Yes
 - [ ] No
 
-2. Did the translated snippet compile or pass linting tools
+2. Did the translated snippet compile or pass linting tools?
 
 - [ ] Yes
 - [ ] No
 
-3. Did you create and commit the translation in a separate scrapbook branch
+3. Did you create and commit the translation in a separate scrapbook branch?
 
 - [ ] Yes
 - [ ] No
