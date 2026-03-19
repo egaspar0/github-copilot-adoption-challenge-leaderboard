@@ -18,9 +18,9 @@ public partial class Participantscore
 
     public string? Validationlink { get; set; }
 
-    public Guid Teamid { get; set; }
+    public Guid? Teamid { get; set; }
 
-    public virtual Team Team { get; set; } = null!;
+    public virtual Team? Team { get; set; }
 
     public virtual Activity Activity { get; set; } = null!;
 

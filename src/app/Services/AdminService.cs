@@ -108,6 +108,13 @@ namespace LeaderboardApp.Services
             var newSlug = newTeam.GitHubSlug;
 
             participant.Teamid = newTeamId;
+
+            // Restamp all historical score rows to the new team so the
+            // new team immediately benefits and the old team loses those points.
+            await _context.Participantscores
+                .Where(ps => ps.Participantid == participantId)
+                .ExecuteUpdateAsync(s => s.SetProperty(ps => ps.Teamid, newTeamId));
+
             await _context.SaveChangesAsync();
 
             if (!string.IsNullOrWhiteSpace(participant.Githubhandle))
@@ -129,6 +136,13 @@ namespace LeaderboardApp.Services
 
             var oldSlug = participant.Team?.GitHubSlug;
             participant.Teamid = null;
+
+            // Null out the teamid on all score rows so the old team's total
+            // no longer includes this participant's points.
+            await _context.Participantscores
+                .Where(ps => ps.Participantid == participantId)
+                .ExecuteUpdateAsync(s => s.SetProperty(ps => ps.Teamid, (Guid?)null));
+
             await _context.SaveChangesAsync();
 
             if (!string.IsNullOrWhiteSpace(participant.Githubhandle) && !string.IsNullOrWhiteSpace(oldSlug))

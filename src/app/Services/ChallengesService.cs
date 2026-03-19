@@ -229,9 +229,19 @@ namespace LeaderboardApp.Services
         }
 
         public async Task UpdateLeaderboardAsync(Guid teamId)
-        {           
+        {
+            // Only count scores from participants who are currently on this team.
+            // This prevents double-counting when a participant leaves and a new one
+            // joins: the departing member's historical scores stop contributing to
+            // the team total, so the replacement's fresh completions do not stack
+            // on top of the previous member's already-counted work.
+            var currentParticipantIds = await _context.Participants
+                .Where(p => p.Teamid == teamId)
+                .Select(p => p.Participantid)
+                .ToListAsync();
+
             var teamScores = await _context.Participantscores
-                .Where(ps => ps.Teamid == teamId)
+                .Where(ps => ps.Teamid == teamId && currentParticipantIds.Contains(ps.Participantid))
                 .Join(_context.Activities,
                     ps => ps.Activityid,
                     a => a.Activityid,

@@ -135,7 +135,7 @@ public partial class GhcacDbContext : DbContext
             entity.Property(e => e.Activityid).HasColumnName("activityid");
             entity.Property(e => e.Challengeid).HasColumnName("challengeid");
             entity.Property(e => e.Participantid).HasColumnName("participantid");
-            entity.Property(e => e.Teamid).IsRequired().HasColumnName("teamid"); // ✅ NOT NULL
+            entity.Property(e => e.Teamid).IsRequired(false).HasColumnName("teamid"); // nullable – nulled on unassign, restamped on move
             entity.Property(e => e.Score)
                 .HasPrecision(10, 2)
                 .HasColumnName("score");
@@ -161,7 +161,8 @@ public partial class GhcacDbContext : DbContext
 
             entity.HasOne(d => d.Team).WithMany()
                 .HasForeignKey(d => d.Teamid)
-                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("participantscores_teamid_fkey");
         });
 

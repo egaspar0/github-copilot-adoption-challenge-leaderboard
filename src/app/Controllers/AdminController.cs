@@ -11,11 +11,15 @@ namespace LeaderboardApp.Controllers
     {
         private readonly IAdminService _adminService;
         private readonly ILogger<AdminController> _logger;
+        private readonly ScoringService _scoringService;
+        private readonly ChallengesService _challengesService;
 
-        public AdminController(IAdminService adminService, ILogger<AdminController> logger)
+        public AdminController(IAdminService adminService, ILogger<AdminController> logger, ScoringService scoringService, ChallengesService challengesService)
         {
             _adminService = adminService;
             _logger = logger;
+            _scoringService = scoringService;
+            _challengesService = challengesService;
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -77,7 +81,6 @@ namespace LeaderboardApp.Controllers
         public async Task<IActionResult> MoveParticipant(Guid participantId, Guid newTeamId)
         {
             if (RequireAdmin() is { } forbidden) return forbidden;
-            if (RequireNotStarted("Participants") is { } locked) return locked;
 
             try
             {
@@ -98,7 +101,6 @@ namespace LeaderboardApp.Controllers
         public async Task<IActionResult> UnassignParticipant(Guid participantId)
         {
             if (RequireAdmin() is { } forbidden) return forbidden;
-            if (RequireNotStarted("Participants") is { } locked) return locked;
 
             try
             {
@@ -305,6 +307,45 @@ namespace LeaderboardApp.Controllers
             }
 
             return RedirectToAction("Participants");
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  Refresh all scores
+        // ─────────────────────────────────────────────────────────────────────
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RefreshAllScores()
+        {
+            if (RequireAdmin() is { } forbidden) return forbidden;
+
+            var teams = await _adminService.GetAllTeamsAsync();
+            int succeeded = 0;
+            var errors = new List<string>();
+
+            foreach (var team in teams)
+            {
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(team.GitHubSlug))
+                        await _scoringService.InsertTeamGitHubScoresAsync(team.GitHubSlug);
+
+                    await _challengesService.UpdateLeaderboardAsync(team.Teamid);
+                    succeeded++;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error refreshing scores for team {TeamId} ({TeamName})", team.Teamid, team.Name);
+                    errors.Add(team.Name);
+                }
+            }
+
+            if (errors.Count == 0)
+                TempData["Success"] = $"Scores refreshed for all {succeeded} team(s).";
+            else
+                TempData["Error"] = $"Scores refreshed for {succeeded} team(s). Failed for: {string.Join(", ", errors)}.";
+
+            return RedirectToAction("Index");
         }
 
         // ─────────────────────────────────────────────────────────────────────

@@ -31,7 +31,7 @@
     {
         <div class="alert alert-warning">
             <span class="glyphicon glyphicon-lock"></span>
-            <strong>Locked.</strong> The challenge has started - participant reorganization is disabled.
+            <strong>Partially locked.</strong> The challenge has started &mdash; <strong>deleting</strong> participants is disabled, but you can still <strong>move</strong> or <strong>unassign</strong> participants between teams.
         </div>
     }
 
@@ -128,7 +128,7 @@
                                 <form method="post" action="@Url.Action("MoveParticipant", "Admin")" style="display:flex; gap:4px; align-items:center;">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="participantId" value="@p.ParticipantId" />
-                                    <select name="newTeamId" class="form-control input-sm" @(Model.IsLocked ? "disabled" : "") style="flex:1; min-width:140px;">
+                                    <select name="newTeamId" class="form-control input-sm" style="flex:1; min-width:140px;">
                                         @foreach (var t in Model.AllTeams)
                                         {
                                             if (t.Teamid == p.TeamId)
@@ -141,7 +141,7 @@
                                             }
                                         }
                                     </select>
-                                    <button type="submit" class="btn btn-primary btn-sm" @(Model.IsLocked ? "disabled" : "") title="Move participant to selected team">
+                                    <button type="submit" class="btn btn-primary btn-sm" title="Move participant to selected team">
                                         <span class="glyphicon glyphicon-share-alt"></span>
                                     </button>
                                 </form>
@@ -153,7 +153,6 @@
                                     <input type="hidden" name="participantId" value="@p.ParticipantId" />
                                     <button type="submit"
                                             class="btn btn-warning btn-xs"
-                                            @(Model.IsLocked ? "disabled" : "")
                                             title="Remove from team (keep participant)"
                                             onclick="return confirm('Unassign @Html.Encode(p.FullName.Replace("'", "\\'")) from their team?');">
                                         <span class="glyphicon glyphicon-remove-circle"></span> Unassign
